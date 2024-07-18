@@ -1,0 +1,7 @@
+[package]
+name = "hammer-library-app"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+sycamore = "0.8.2"
