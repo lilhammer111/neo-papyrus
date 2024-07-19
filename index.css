@@ -2,11 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-body, html {
-    @apply w-full h-full
-}
-
-@layer utilities {
+@layer components {
     .flex-center {
         @apply flex items-center justify-center
     }

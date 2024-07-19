@@ -1,9 +1,7 @@
-use sycamore::prelude::*;
+use sycamore::{prelude::*, web::html::view};
 
 fn main() {
-    sycamore::render(|ctx| {
-        view! {ctx,
-            div(class="bg-red-500 flex-center") {"hello world"}
-        }
-    });
+    sycamore::render(|| view! {
+            div(class="bg-red-300") { "hello world" }
+});
 }
