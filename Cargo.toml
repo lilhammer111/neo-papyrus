@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-sycamore = "0.9.0-beta.2"
+sycamore = "0.8"
 
 [workspace]
 members = [".", "src-tauri"]

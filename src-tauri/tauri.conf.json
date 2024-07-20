@@ -1,8 +1,8 @@
 {
   "build": {
     "beforeBuildCommand": "",
-    "beforeDevCommand": "",
-    "devPath": "../dist/index.html",
+    "beforeDevCommand": "trunk serve",
+    "devPath": "http://localhost:8080",
     "distDir": "../dist"
   },
   "package": {
