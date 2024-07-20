@@ -1,9 +1,14 @@
+mod components;
+mod ui;
+
 use sycamore::prelude::*;
+use ui::layout::Layout;
 
 fn main() {
-    sycamore::render(|cx| {
-        view! {
-            cx, p {"hello world"}
-        }
-    });
+    sycamore::render(|ctx| -> View<DomNode> { 
+        view!(
+            ctx, 
+            Layout()
+        )
+    })
 }

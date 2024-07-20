@@ -2,8 +2,23 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer components {
+@layer utilities {
     .flex-center {
         @apply flex items-center justify-center
     }
+
+    .flex-ver-bt {
+        @apply flex flex-col justify-between items-center
+    }
 }
+
+@layer components {
+    .bg-primary {
+        @apply bg-pink-950
+    }
+}
+
+body, html {
+    @apply w-screen h-screen bg-primary text-white box-border
+}
+
