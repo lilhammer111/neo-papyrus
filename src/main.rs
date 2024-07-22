@@ -2,13 +2,12 @@ mod components;
 mod ui;
 
 use sycamore::prelude::*;
-use ui::layout::Layout;
-
+use ui::layout::RootLayout;
 fn main() {
     sycamore::render(|ctx| -> View<DomNode> { 
         view!(
             ctx, 
-            Layout()
+            RootLayout()
         )
     })
 }

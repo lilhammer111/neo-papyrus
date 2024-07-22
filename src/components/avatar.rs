@@ -5,6 +5,6 @@ use sycamore::prelude::*;
 pub fn Avatar<G: Html>(cx: Scope) -> View<G> {
     view!(
         cx,
-        div(class="w-8 h-8 rounded-2xl bg-yellow-600")
+        div(class="w-10 h-10 rounded bg-stone-500")
     )
 }

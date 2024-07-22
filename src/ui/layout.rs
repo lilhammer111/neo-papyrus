@@ -1,17 +1,18 @@
 use sycamore::prelude::*;
-use super::sidebar::Sidebar;
-use super::page::Page;
+use crate::ui::siderbar::layout::SiderbarLayout;
+use crate::ui::page::layout::PageLayout;
+
 
 #[component]
-pub fn Layout<G: Html>(cx: Scope) -> View<G> {
+pub fn RootLayout<G: Html>(cx: Scope) -> View<G> {
     view!(
         cx,
         div(class="flex h-full w-full") {
             div(class="") {
-                Sidebar()
+                SiderbarLayout()
             }
             div(class="w-full h-full flex flex-col") {
-                Page()
+                PageLayout()
             }
         }
     )

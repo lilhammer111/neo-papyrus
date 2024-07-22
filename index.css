@@ -13,12 +13,16 @@
 }
 
 @layer components {
-    .bg-primary {
+    .bgc-primary {
         @apply bg-pink-950
+    }
+
+    .bgc-page {
+        @apply bg-zinc-200
     }
 }
 
 body, html {
-    @apply w-screen h-screen bg-primary text-white box-border
+    @apply w-screen h-screen bgc-primary text-white box-border
 }
 

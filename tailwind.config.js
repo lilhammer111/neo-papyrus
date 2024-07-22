@@ -6,7 +6,8 @@ module.exports = {
     "src/ui/**/*.rs",
   ],
   theme: {
-    extend: {},
+    extend: {
+    },
   },
   plugins: [],
 }
