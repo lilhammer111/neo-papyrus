@@ -1,15 +1,21 @@
+mod action;
+mod menu;
+mod layout;
+
+use crate::action::setup_shortcuts;
+use crate::menu::build_menu;
 use adw::prelude::*;
 use adw::Application;
 use adw::NavigationPage;
 use adw::NavigationSplitView;
 use gtk::glib::ExitCode;
-use gtk::PopoverMenuBar;
-
-const APP_ID: &str = "org.gtk_rs.ListWidgets1";
+use gtk::Orientation::Vertical;
 
 fn main() -> ExitCode {
     // Create a new application
-    let app = Application::builder().application_id(APP_ID).build();
+    let app = Application::builder()
+        .application_id("org.gtk_rs.NeoPapyrus")
+        .build();
     app.connect_startup(setup_shortcuts);
     // Connect to "activate" signal of `app`
     app.connect_activate(build_ui);
@@ -17,18 +23,21 @@ fn main() -> ExitCode {
     // Run the application
     app.run()
 }
-
-fn setup_shortcuts(app: &adw::Application) {
-    app.set_accels_for_action("win.filter('All')", &["<Ctrl>a"]);
-    app.set_accels_for_action("win.filter('Open')", &["<Ctrl>o"]);
-    app.set_accels_for_action("win.filter('Done')", &["<Ctrl>d"]);
-}
-
 fn build_ui(app: &Application) {
-    let sidebar = NavigationPage::builder().build();
-    let content = NavigationPage::builder().build();
+    let vbox = gtk::Box::builder()
+        .orientation(Vertical)
+        .hexpand(true)
+        // .valign(Align::Center)
+        .margin_top(6)
+        .margin_bottom(6)
+        .build();
 
-    let menubar = PopoverMenuBar
+    let popover_bar = build_menu();
+
+    vbox.append(&popover_bar);
+
+    let sidebar = NavigationPage::builder().build();
+    let content = NavigationPage::builder().child(&vbox).build();
 
     let view = NavigationSplitView::builder()
         .content(&content)
@@ -38,14 +47,12 @@ fn build_ui(app: &Application) {
         .sidebar_width_unit(adw::LengthUnit::Px)
         .build();
 
-
-
     let window = gtk::ApplicationWindow::builder()
         .application(app)
         .title("Neo Papyrus")
         .height_request(800)
         .width_request(1096)
-        .maximized(true)
+        // .maximized(true)
         .child(&view)
         .build();
 
