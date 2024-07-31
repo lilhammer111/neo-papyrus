@@ -1,8 +1,8 @@
-use adw::gio::{Application, Menu, MenuModel};
+use adw::gio::{Menu, MenuModel};
 use adw::prelude::Cast;
 use gtk::PopoverMenuBar;
 
-pub fn build_menu(app: &Application) -> PopoverMenuBar {
+pub fn build_menu() -> PopoverMenuBar {
     let file_menu = Menu::new();
     file_menu.append(Some("New File"), Some("app.file.new"));
     file_menu.append(Some("Open File"), Some("app.file.openf"));
@@ -22,6 +22,3 @@ pub fn build_menu(app: &Application) -> PopoverMenuBar {
     popover_bar
 }
 
-pub fn create_menu_action(app: &Application) {
-    app.addac
-}
