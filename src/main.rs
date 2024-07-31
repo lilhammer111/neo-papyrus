@@ -1,8 +1,5 @@
-mod action;
 mod layout;
-mod menu;
 
-use crate::action::setup_shortcuts;
 use adw::prelude::*;
 use adw::Application;
 use gtk::glib::ExitCode;
@@ -13,7 +10,6 @@ fn main() -> ExitCode {
     let app = Application::builder()
         .application_id("com.neo-papyrus")
         .build();
-    app.connect_startup(setup_shortcuts);
     // Connect to "activate" signal of `app`
     app.connect_activate(build_ui);
 
@@ -21,7 +17,6 @@ fn main() -> ExitCode {
     app.run()
 }
 
-fn build_ui(app:&Application) {
-    let view = View::basic(app);
-    view.stack.
+fn build_ui() {
+
 }
