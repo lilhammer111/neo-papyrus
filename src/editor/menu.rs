@@ -1,17 +1,16 @@
-use gtk::{Application, gio};
-use adw::gio::{Menu, MenuModel};
-use adw::prelude::{ActionMapExt, Cast};
+use adw::gio::{ActionEntry, Menu, MenuModel, SimpleActionGroup};
+use adw::prelude::{ActionMapExtManual, Cast};
+use adw::ApplicationWindow;
+use gtk::prelude::WidgetExt;
 use gtk::PopoverMenuBar;
 
-pub fn build_menu(app: &Application) -> PopoverMenuBar {
+pub fn build_menu(win: &ApplicationWindow) -> PopoverMenuBar {
     let file_menu = Menu::new();
-    file_menu.append(Some("New File"), Some("app.file.new"));
-    file_menu.append(Some("Open File"), Some("app.file.openf"));
-    file_menu.append(Some("Open Folder"), Some("app.file.openfd"));
-    file_menu.append(Some("Save File"), Some("app.file.save"));
+    file_menu.append(Some("New Project"), Some("file.new"));
+    file_menu.append(Some("Open Project"), Some("file.open"));
 
     let help_menu = Menu::new();
-    help_menu.append(Some("About"), Some("app.help.about"));
+    help_menu.append(Some("About"), Some("about"));
 
     let menu = Menu::new();
     menu.append_submenu(Some("File"), &file_menu);
@@ -20,34 +19,24 @@ pub fn build_menu(app: &Application) -> PopoverMenuBar {
 
     let popover_bar = PopoverMenuBar::from_model(Some(&mm));
 
-    create_actions(app);
+    let file_actions_group = create_actions();
+    win.insert_action_group("file", Some(&file_actions_group));
 
     popover_bar
 }
 
-fn create_actions(app: &Application) {
-    // 添加动作
-    let action_new_file = gio::SimpleAction::new("file.new", None);
-    action_new_file.connect_activate(|_, _| {
-        println!("New File activated");
-    });
-    app.add_action(&action_new_file);
+fn create_actions() -> SimpleActionGroup {
+    let action_new_proj = ActionEntry::builder("new")
+        .activate(move |_, _, _| println!("New Project"))
+        .build();
 
-    let action_open_file = gio::SimpleAction::new("file.open", None);
-    action_open_file.connect_activate(|_, _| {
-        println!("Open File activated");
-    });
-    app.add_action(&action_open_file);
+    let action_open_proj = ActionEntry::builder("open")
+        .activate(move |_, _, _| println!("open project"))
+        .build();
 
-    let action_save_file = gio::SimpleAction::new("file.save", None);
-    action_save_file.connect_activate(|_, _| {
-        println!("Save File activated");
-    });
-    app.add_action(&action_save_file);
+    let file_actions = SimpleActionGroup::new();
 
-    let action_about = gio::SimpleAction::new("help.about", None);
-    action_about.connect_activate(|_, _| {
-        println!("About activated");
-    });
-    app.add_action(&action_about);
+    file_actions.add_action_entries([action_new_proj, action_open_proj]);
+
+    file_actions
 }

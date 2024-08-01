@@ -1,9 +1,9 @@
 mod layout;
+mod lib;
 
 use adw::prelude::*;
 use adw::Application;
 use gtk::glib::ExitCode;
-use crate::layout::View;
 
 fn main() -> ExitCode {
     // Create a new application

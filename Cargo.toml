@@ -7,6 +7,10 @@ edition = "2021"
 adw = { version = "0.7.0", package = "libadwaita", features = ["v1_5"] }
 gtk = { version = "0.9.0", package = "gtk4", features = ["v4_12"] }
 
+[lib]
+name = "common"
+path = "src/lib.rs"
+
 [[bin]]
 name = "editor"
 path = "src/editor/main.rs"
