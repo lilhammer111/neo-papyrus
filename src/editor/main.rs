@@ -36,5 +36,4 @@ fn build_ui(app: &Application) {
 
     win.set_content(Some(&mbox));
     win.present();
-
 }
