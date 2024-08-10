@@ -9,6 +9,7 @@ gtk = { version = "0.9.0", package = "gtk4", features = ["v4_6"] }
 [dependencies.adw]
 version = "0.7.0"
 package = "libadwaita"
+features = ["v1_1"]
 
 [lib]
 name = "common"

@@ -28,6 +28,27 @@ pub fn box_win<T: IsA<Widget>>(app: &Application, widget: &T) -> ApplicationWind
         .build()
 }
 
+pub fn fixed_win(app: &gtk::Application, fixed: &gtk::Fixed   ) -> ApplicationWindow {
+    let mbox = gtk::Box::builder()
+        .orientation(Vertical)
+        .spacing(10)
+        .build();
+
+    let header_bar = adw::HeaderBar::builder().build();
+    mbox.append(&header_bar);
+
+    mbox.append(fixed);
+
+    ApplicationWindow::builder()
+        .application(app)
+        .content(&mbox)
+        .default_width(1000)
+        .default_height(800)
+        .title("test")
+        .icon_name("document-open")
+        .build()
+}
+
 pub fn frame_win<T: IsA<Widget>>(app: &Application, widget: &T) -> ApplicationWindow {
     let frame = gtk::Frame::builder().child(widget).build();
 

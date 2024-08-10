@@ -1,7 +1,5 @@
 use adw::prelude::*;
-use adw::Application;
-use adw::NavigationPage;
-use adw::NavigationSplitView;
+use adw::{Application, NavigationPage, NavigationSplitView};
 use gtk::glib::ExitCode;
 use gtk::Button;
 use gtk::Orientation::Vertical;

@@ -1,12 +1,15 @@
 mod menu;
 mod shortcuts;
+mod view;
 
 use crate::menu::build_menu;
+use crate::shortcuts::setup_shortcuts;
+use crate::view::build_view;
 use adw::glib::ExitCode;
 use adw::prelude::*;
+use gtk::Align::{End, Start};
 use gtk::Application;
 use gtk::Orientation::Vertical;
-use crate::shortcuts::setup_shortcuts;
 
 fn main() -> ExitCode {
     let app = Application::builder()
@@ -31,9 +34,22 @@ fn build_ui(app: &Application) {
 
     let mbox = gtk::Box::builder().orientation(Vertical).build();
 
+    let view = build_view();
     mbox.append(&header_bar);
     mbox.append(&menu);
+    mbox.append(&view);
 
-    win.set_content(Some(&mbox));
+    let overlay = gtk::Overlay::builder().child(&mbox).build();
+
+    let btn = gtk::Button::builder()
+        .icon_name("list-add-symbolic")
+        .halign(Start)
+        .valign(End)
+        .margin_bottom(10)
+        .margin_start(10)
+        .build();
+    overlay.add_overlay(&btn);
+
+    win.set_content(Some(&overlay));
     win.present();
 }
