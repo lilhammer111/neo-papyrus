@@ -21,27 +21,27 @@ fn main() -> ExitCode {
 }
 
 fn build_ui(app: &Application) {
-    let win = adw::ApplicationWindow::builder()
+    let win = gtk::ApplicationWindow::builder()
         .title("Editor")
         .default_width(1000)
         .default_height(780)
         .application(app)
         .build();
 
-    let header_bar = adw::HeaderBar::builder().build();
-
+    // let header_bar = adw::HeaderBar::builder().build();
     let menu = build_menu(&win);
 
     let mbox = gtk::Box::builder().orientation(Vertical).build();
 
-    let view = build_view();
-    mbox.append(&header_bar);
+    let view = build_view(&win);
+    // mbox.append(&header_bar);
     mbox.append(&menu);
     mbox.append(&view);
 
     let overlay = gtk::Overlay::builder().child(&mbox).build();
 
     let btn = gtk::Button::builder()
+        .has_frame(false)
         .icon_name("list-add-symbolic")
         .halign(Start)
         .valign(End)
@@ -50,6 +50,7 @@ fn build_ui(app: &Application) {
         .build();
     overlay.add_overlay(&btn);
 
-    win.set_content(Some(&overlay));
+
+    win.set_child(Some(&overlay));
     win.present();
 }

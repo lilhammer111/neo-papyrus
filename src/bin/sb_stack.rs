@@ -52,7 +52,6 @@ fn build_ui(app: &Application) {
     vbox.append(&btn2);
 
     let sidebar = StackSidebar::builder().stack(&stack).build();
-    sidebar.
 
     // 将 sidebar 添加到猪盒子
     main_box.append(&vbox);

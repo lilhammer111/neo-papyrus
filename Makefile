@@ -1,5 +1,3 @@
-# Makefile
-
 # 构建并运行应用程序，带环境变量
 run:
 	@cargo run --bin editor
