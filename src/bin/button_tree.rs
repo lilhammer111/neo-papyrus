@@ -2,6 +2,7 @@ use adw::prelude::*;
 use adw::{gdk, gio};
 use gtk::Align::Start;
 use gtk::Orientation::{Horizontal, Vertical};
+use gtk::{GestureClick, PolicyType, ScrolledWindow, WrapMode};
 use std::str::from_utf8;
 
 fn main() {
@@ -22,7 +23,11 @@ fn load_css() {
 
     button {
         background-color: transparent; /* 将Button的背景色设置为透明 */
-        padding: 0;
+        padding: 0;  /* 将button的行高降到最小，因为gtk css没有Height属性 */
+    }
+
+    textview.view {
+        padding: 10px 20px 10px 20px;
     }
     ";
 
@@ -46,13 +51,24 @@ fn build_ui(app: &adw::Application) {
         .build();
 
     // 创建文本显示区域
-    let text_view = gtk::TextView::builder().vexpand(true).hexpand(true).build();
+    let text_view = gtk::TextView::builder()
+        .editable(false)
+        .vexpand(true)
+        .hexpand(true)
+        .wrap_mode(WrapMode::WordChar)
+        .build();
     let text_buffer = text_view.buffer();
+
+    let tv_scroller = ScrolledWindow::builder()
+        .vscrollbar_policy(PolicyType::Automatic)
+        .hscrollbar_policy(PolicyType::Never)
+        .child(&text_view)
+        .build();
 
     let listbox = gtk::ListBox::builder().vexpand(true).build();
 
     // 从文件系统中读取文件
-    let dpath = "/home/lilhammer/Documents/HammerMind";
+    let dpath = "/home/lilhammer/Documents/HammerMind/Programming/Rust";
     let dir = gio::File::for_path(dpath);
 
     if let Ok(file_iter) =
@@ -83,17 +99,27 @@ fn build_ui(app: &adw::Application) {
 
             // 为按钮添加点击事件
             let text_buffer = text_buffer.clone();
-            btn.connect_clicked(move |_| {
-                if file_info.file_type() == gio::FileType::Regular {
-                    if let Ok((contents, _)) = file_path.load_contents(gio::Cancellable::NONE) {
-                        if let Ok(text) = from_utf8(&contents) {
-                            text_buffer.set_text(text)
-                        } else {
-                            text_buffer.set_text("Failed to get file text")
+            // 创建 GestureClick 以处理双击事件
+            let gesture = GestureClick::builder()
+                .button(1)
+                .propagation_phase(gtk::PropagationPhase::Capture)
+                .build();
+
+            gesture.connect_released(move |_, n_press, _, _| {
+                if n_press == 2 {
+                    if file_info.file_type() == gio::FileType::Regular {
+                        if let Ok((contents, _)) = file_path.load_contents(gio::Cancellable::NONE) {
+                            if let Ok(text) = from_utf8(&contents) {
+                                text_buffer.set_text(text);
+                            } else {
+                                text_buffer.set_text("Failed to get file text");
+                            }
                         }
                     }
                 }
             });
+
+            btn.add_controller(gesture);
 
             listbox.append(&btn);
         }
@@ -107,7 +133,7 @@ fn build_ui(app: &adw::Application) {
 
     let view_box = gtk::Box::new(Horizontal, 0);
     view_box.append(&scrolled_window);
-    view_box.append(&text_view);
+    view_box.append(&tv_scroller);
 
     let mbox = gtk::Box::builder().orientation(Vertical).build();
     let header = adw::HeaderBar::new();
