@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 gtk = { version = "0.9.0", package = "gtk4", features = ["v4_6"] }
+uuid = { version = "1.10.0", features = ["v4"] }
 
 [dependencies.adw]
 version = "0.7.0"

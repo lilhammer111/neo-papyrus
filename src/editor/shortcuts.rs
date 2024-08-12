@@ -1,4 +1,4 @@
-use gtk::Application;
+use adw::Application;
 use gtk::prelude::GtkApplicationExt;
 
 pub fn setup_shortcuts(app: &Application) {
