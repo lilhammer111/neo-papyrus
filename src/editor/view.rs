@@ -1,39 +1,41 @@
-use adw;
-use adw::glib::{closure, closure_local};
+use adw::ExpanderRow;
+use gtk::prelude::TextViewExt;
 use gtk::prelude::*;
-use gtk::prelude::{GtkWindowExt, TextViewExt, WidgetExt};
 use gtk::Orientation::Horizontal;
-use gtk::{PolicyType, ScrolledWindow, WrapMode};
-use gtk::{Stack, StackSidebar};
+use gtk::{PolicyType, ScrolledWindow, TextBuffer, WrapMode};
+use gtk::Overflow::Hidden;
 
-pub fn build_view(_win: &adw::ApplicationWindow) -> gtk::Box {
-    let stack = Stack::builder().hexpand(true).focus_on_click(true).build();
+pub fn build_view(_win: &adw::ApplicationWindow) -> (gtk::Box, ExpanderRow, TextBuffer) {
+    let main_box = gtk::Box::new(Horizontal, 0);
 
-    let sidebar = StackSidebar::builder()
-        .stack(&stack)
-        .width_request(220)
+    let expander_row = ExpanderRow::builder()
+        .css_classes(vec!["root-expander"])
+        .title("No Project")
+        .expanded(false) // 默认不展开
         .build();
 
-    let view_box = gtk::Box::builder()
+    let sidebar_scrolled = ScrolledWindow::builder()
+        .vscrollbar_policy(PolicyType::Automatic)
+        .hscrollbar_policy(PolicyType::Never)
+        // .hscrollbar_policy(PolicyType::Automatic)
+        .child(&expander_row)
+        .width_request(280)
+        .overflow(Hidden)
+        .max_content_width(400)
         .vexpand(true)
-        .orientation(Horizontal)
+        .margin_bottom(45)
         .build();
-    view_box.append(&sidebar);
+
+    main_box.append(&sidebar_scrolled);
 
     // 创建文本显示区域
     let text_view = gtk::TextView::builder()
-        .editable(false)
+        .editable(true)
         .vexpand(true)
         .hexpand(true)
-        .wrap_mode(WrapMode::WordChar)
+        .wrap_mode(WrapMode::Word)
         .build();
     let text_buffer = text_view.buffer();
-
-    text_view.connect_closure(
-        "new-text",
-        false,
-        closure_local!(move |emitor, new_text| { text_buffer.set_text(new_text) }),
-    );
 
     let tv_scroller = ScrolledWindow::builder()
         .vscrollbar_policy(PolicyType::Automatic)
@@ -41,10 +43,7 @@ pub fn build_view(_win: &adw::ApplicationWindow) -> gtk::Box {
         .child(&text_view)
         .build();
 
-    // `stack` 监听 `dialog` 发射的 `folder-selected` 信号
-    stack.connect_closure("directory", false, move |emitor, params| {
-        stack.
-    });
+    main_box.append(&tv_scroller);
 
-    view_box
+    (main_box, expander_row, text_buffer)
 }

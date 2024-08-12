@@ -1,6 +1,7 @@
 mod menu;
 mod shortcuts;
 mod view;
+mod util;
 
 use crate::menu::build_menu;
 use crate::shortcuts::setup_shortcuts;
@@ -56,6 +57,10 @@ fn load_css(_: &adw::Application) {
         padding-bottom: 0;
     }
 
+    row.dir-expander > box > list > row > box > box {
+        border-spacing: 0 0;
+    }
+
     textview.view {
         padding: 10px 20px 10px 20px;
     }
@@ -64,8 +69,16 @@ fn load_css(_: &adw::Application) {
         background-color: transparent; /* 将ListBox的背景色设置为白色 */
     }
 
-    image {
-        margin-right: 6px;
+    image.icon {
+        margin-right: 1px;
+    }
+
+    menubar {
+        min-height: 30px;
+    }
+
+    headerbar {
+        min-height: 20px;
     }
     ";
     // 创建和加载 CSS Provider
@@ -86,13 +99,14 @@ fn build_ui(app: &adw::Application) {
         .application(app)
         .build();
 
-    let header_bar = adw::HeaderBar::builder().build();
-    let menu = build_menu(&win);
 
     let mbox = gtk::Box::builder().orientation(Vertical).build();
 
-    let view = build_view(&win);
+    let (view, expander, text_buffer) = build_view(&win);
+    let header_bar = adw::HeaderBar::builder().build();
     mbox.append(&header_bar);
+
+    let menu = build_menu(&win,&expander, &text_buffer);
     mbox.append(&menu);
     mbox.append(&view);
 
