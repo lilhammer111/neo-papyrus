@@ -1,7 +1,7 @@
-use crate::core::dir::{render_children_dir, INDENT_MARGIN};
+use crate::core::dir::{render_children_dir, INDENT_MARGIN, root_dir_title, root_dir_subtitle};
 use crate::APP_ID;
 use adw::gio::{ActionEntry, SimpleActionGroup};
-use adw::prelude::{ActionMapExtManual, FileExt, SettingsExt};
+use adw::prelude::{ActionMapExtManual, ActionRowExt, FileExt, SettingsExt};
 use adw::{gio, ExpanderRow};
 use gtk::prelude::{DialogExt, FileChooserExt, GtkWindowExt, WidgetExt};
 use gtk::{FileChooserAction, Overflow, ResponseType, TextBuffer};
@@ -33,31 +33,30 @@ pub fn file_actions(
             let text_bf_cloned = text_bf_cloned.clone();
             dialog.connect_response(move |dialog, resp_kind| {
                 if resp_kind == ResponseType::Accept {
-                    if let Some(gio_file) = dialog.file() {
+                    if let Some(g_dir) = dialog.file() {
                         // set project name to expander
-                        let fname_pb = gio_file.basename().unwrap();
-                        let dirname = fname_pb.to_str().unwrap();
-
                         // 通过设置一个新的root expander，来清空原先的root expander
                         let root_expander = ExpanderRow::builder()
                             .icon_name("org.gnome.Software.Create")
                             .overflow(Overflow::Hidden)
                             .css_classes(vec!["root-expander"])
-                            .title(dirname)
+                            .width_request(320)
+                            .subtitle(root_dir_subtitle(&g_dir))
+                            .title(root_dir_title(&g_dir))
                             .expanded(false) // 默认不展开
                             .build();
                         scrl_window_cloned.set_child(Some(&root_expander));
 
                         // 递归生成子目录
                         render_children_dir(
-                            &gio_file,
+                            &g_dir,
                             &text_bf_cloned,
                             &root_expander,
                             INDENT_MARGIN,
                         );
 
                         // 更新上次打开的项目
-                        let path_pb = gio_file.path().unwrap();
+                        let path_pb = g_dir.path().unwrap();
                         let settings = gio::Settings::new(APP_ID);
                         settings
                             .set_string("last-opened-dir", path_pb.to_str().unwrap())

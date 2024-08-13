@@ -169,3 +169,16 @@ fn content_type_to_icon(content_type: &str) -> String {
         _ => String::from("document"),
     }
 }
+
+pub fn root_dir_title(g_dir: &gio::File) -> String {
+    let pb = g_dir.basename().unwrap();
+    let dirname = pb.to_str().unwrap();
+
+    dirname.to_string()
+}
+
+pub fn root_dir_subtitle(g_dir: &gio::File) -> String {
+    let path_pb = g_dir.path().unwrap();
+    let path = path_pb.to_str().unwrap();
+    path.to_string()
+}

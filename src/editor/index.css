@@ -29,6 +29,17 @@ row.dir-expander > box > list > row > box {
     margin-right: 0;
 }
 
+
+/* 项目根目录高度 */
+row.root-expander > box > list > row > box {
+    min-height: 40px;
+}
+
+/* 设置根目录bg color */
+/*row.root-expander > box > list > row {*/
+/*    background-color: rgba(0, 0, 0, .09);*/
+/*}*/
+
 row.dir-expander > box > list > row, row.dir-expander {
     padding-left: 0;
     padding-right: 0;

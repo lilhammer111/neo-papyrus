@@ -1,6 +1,6 @@
-use crate::core::dir::{render_children_dir, INDENT_MARGIN};
+use crate::core::dir::{render_children_dir, root_dir_subtitle, root_dir_title, INDENT_MARGIN};
 use crate::APP_ID;
-use adw::prelude::PreferencesRowExt;
+use adw::prelude::{ExpanderRowExt, PreferencesRowExt};
 use adw::{gio, ExpanderRow};
 use gtk::prelude::TextViewExt;
 use gtk::prelude::*;
@@ -16,6 +16,7 @@ pub fn build_view(_win: &adw::ApplicationWindow) -> (gtk::Box, ScrolledWindow, T
         .css_classes(vec!["root-expander"])
         .icon_name("org.gnome.Software.Create")
         .title("No Project")
+        .width_request(320)
         .expanded(false) // 默认不展开
         .build();
 
@@ -24,9 +25,8 @@ pub fn build_view(_win: &adw::ApplicationWindow) -> (gtk::Box, ScrolledWindow, T
         .hscrollbar_policy(PolicyType::Never)
         // .hscrollbar_policy(PolicyType::Automatic)
         .child(&root_expander)
-        .width_request(280)
+        .width_request(320)
         .overflow(Hidden)
-        .max_content_width(400)
         .vexpand(true)
         .margin_bottom(45)
         .build();
@@ -59,8 +59,8 @@ pub fn build_view(_win: &adw::ApplicationWindow) -> (gtk::Box, ScrolledWindow, T
     // initialize dir sidebar
     if open_method == "reopen" {
         render_children_dir(&dir, &text_buffer, &root_expander, INDENT_MARGIN);
-        let pb = dir.basename().unwrap();
-        root_expander.set_title(pb.to_str().unwrap());
+        root_expander.set_title(&root_dir_title(&dir));
+        root_expander.set_subtitle(&root_dir_subtitle(&dir));
     }
 
     (main_box, sidebar_scrolled, text_buffer)
