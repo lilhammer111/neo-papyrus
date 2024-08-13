@@ -18,7 +18,7 @@ row.dir-expander > box {
 }
 
 revealer image.expander-row-arrow {
-    margin-right: 20px;  /* 将子项的switch箭头的margin调回来 */
+    margin-right: 20px; /* 将子项的switch箭头的margin调回来 */
 }
 
 row.dir-expander > box > list > row > box {

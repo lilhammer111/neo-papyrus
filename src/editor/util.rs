@@ -1,4 +1,4 @@
-use adw::prelude::{ExpanderRowExt, FileEnumeratorExt, FileExt, FileExtManual, ListModelExt};
+use adw::prelude::{ExpanderRowExt, FileEnumeratorExt, FileExt, FileExtManual};
 use adw::{gio, ExpanderRow};
 use gtk::prelude::{TextBufferExt, WidgetExt};
 use gtk::Align::Start;
@@ -23,12 +23,10 @@ pub fn render_children_dir(
         while let Some(file_info) = file_iter.next_file(gio::Cancellable::NONE).unwrap() {
             // 获取文件类型 file_kind，文件名 file_name， 文件路径 fpath
             let pb = file_info.name();
-            println!("pb: {}", pb.to_str().unwrap());
             let file_name = pb.to_str().unwrap();
-
             let file_kind = file_info.file_type();
             let content_type = file_info.content_type().unwrap();
-            println!("file: {}, content type: {}", file_name, content_type);
+            // println!("file name: {}, content type: {}", file_name, content_type);
 
             if should_skip(&file_name, file_kind, &content_type) {
                 continue;
@@ -39,7 +37,9 @@ pub fn render_children_dir(
                 // 如果文件类型为目录
 
                 // 设置相应的item icon
-                let icon_name = "inode-directory-symbolic";
+                // let icon_name = "inode-directory-symbolic";
+                let icon_name = "system-file-manager";
+
 
                 // 为该子文件夹创建一个expander
                 let child_expander = ExpanderRow::builder()
@@ -53,20 +53,14 @@ pub fn render_children_dir(
                 parent_expander.add_row(&child_expander);
                 child_count += 1;
 
-                let count = parent_expander.observe_children().n_items();
-                println!("\ncount: {count}\n");
                 // 递归调用 render_directory方法来创建子文件夹的子项
                 render_children_dir(&file_path, &text_buffer, &child_expander, indent_margin);
             } else {
                 // 否则文件类型为常规文件 Regular
 
                 // 设置文件icon
-                let  icon_name;
+                let icon_name = content_type_to_icon(content_type.as_str());
 
-                match content_type.as_str() {
-                    "text/markdown" => icon_name = "text-markdown",
-                    _ => icon_name = "text-x-generic-symbolic",
-                }
                 // 设置相应的item icon
 
                 // 为该子文件创建按钮
@@ -153,4 +147,11 @@ fn should_skip(file_name: &str, file_kind: gio::FileType, content_type: &str) ->
 
     is_hidden_file
         || (file_kind == gio::FileType::Regular && (is_not_plain_text && is_not_markdown))
+}
+
+fn content_type_to_icon(content_type: &str) -> String {
+    match content_type {
+        "text/markdown" => String::from("text-markdown"),
+        _ => String::from("document"),
+    }
 }

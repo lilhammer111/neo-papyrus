@@ -1,15 +1,14 @@
 use crate::util::{render_children_dir, INDENT_MARGIN};
-use adw::gio;
-use adw::gio::{ActionEntry, SimpleActionGroup};
-use adw::prelude::{ActionMapExtManual, ExpanderRowExt, FileExt, PreferencesRowExt, SettingsExt};
-use gtk::prelude::{DialogExt, FileChooserExt, GtkWindowExt, ListBoxRowExt, WidgetExt};
-use gtk::{FileChooserAction, Label, ResponseType, TextBuffer};
-
 use crate::APP_ID;
+use adw::gio::{ActionEntry, SimpleActionGroup};
+use adw::prelude::{ActionMapExtManual, FileExt, SettingsExt};
+use adw::{gio, ExpanderRow};
+use gtk::prelude::{DialogExt, FileChooserExt, GtkWindowExt, WidgetExt};
+use gtk::{FileChooserAction, Overflow, ResponseType, TextBuffer};
 
 pub fn file_actions(
     win: &adw::ApplicationWindow,
-    expander: &adw::ExpanderRow,
+    scrl_window: &gtk::ScrolledWindow,
     text_bf: &TextBuffer,
 ) -> SimpleActionGroup {
     let action_new_proj = ActionEntry::builder("newp")
@@ -17,7 +16,7 @@ pub fn file_actions(
         .build();
 
     let win = win.clone();
-    let expander_cloned = expander.clone();
+    let scrl_window_cloned = scrl_window.clone();
     let text_bf_cloned = text_bf.clone();
     let action_open_proj = ActionEntry::builder("openp")
         .activate(move |_, _, _| {
@@ -30,27 +29,33 @@ pub fn file_actions(
 
             dialog.add_button("Cancel", ResponseType::Cancel);
             dialog.add_button("Open", ResponseType::Accept);
-            let expander_cloned = expander_cloned.clone();
+            let scrl_window_cloned = scrl_window_cloned.clone();
             let text_bf_cloned = text_bf_cloned.clone();
             dialog.connect_response(move |dialog, resp_kind| {
                 if resp_kind == ResponseType::Accept {
                     if let Some(gio_file) = dialog.file() {
-                        // new an empty child
-                        // expander_cloned.set_child(None::<&Label>);
-                        expander_cloned.remove(&expander_cloned.child().unwrap());
-
                         // set project name to expander
                         let fname_pb = gio_file.basename().unwrap();
                         let dirname = fname_pb.to_str().unwrap();
-                        expander_cloned.set_title(dirname);
 
+                        // 通过设置一个新的root expander，来清空原先的root expander
+                        let root_expander = ExpanderRow::builder()
+                            .overflow(Overflow::Hidden)
+                            .css_classes(vec!["root-expander"])
+                            .title(dirname)
+                            .expanded(false) // 默认不展开
+                            .build();
+                        scrl_window_cloned.set_child(Some(&root_expander));
+
+                        // 递归生成子目录
                         render_children_dir(
                             &gio_file,
                             &text_bf_cloned,
-                            &expander_cloned,
+                            &root_expander,
                             INDENT_MARGIN,
                         );
 
+                        // 更新上次打开的项目
                         let path_pb = gio_file.path().unwrap();
                         let settings = gio::Settings::new(APP_ID);
                         settings

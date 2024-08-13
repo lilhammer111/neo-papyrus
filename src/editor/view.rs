@@ -8,7 +8,7 @@ use gtk::Orientation::Horizontal;
 use gtk::Overflow::Hidden;
 use gtk::{PolicyType, ScrolledWindow, TextBuffer, WrapMode};
 
-pub fn build_view(_win: &adw::ApplicationWindow) -> (gtk::Box, ExpanderRow, TextBuffer) {
+pub fn build_view(_win: &adw::ApplicationWindow) -> (gtk::Box, ScrolledWindow, TextBuffer) {
     let main_box = gtk::Box::new(Horizontal, 0);
 
     let root_expander = ExpanderRow::builder()
@@ -62,5 +62,5 @@ pub fn build_view(_win: &adw::ApplicationWindow) -> (gtk::Box, ExpanderRow, Text
         root_expander.set_title(pb.to_str().unwrap());
     }
 
-    (main_box, root_expander, text_buffer)
+    (main_box, sidebar_scrolled, text_buffer)
 }

@@ -36,8 +36,6 @@ fn load_css(_: &adw::Application) {
 }
 
 fn build_ui(app: &adw::Application) {
-
-
     let win = adw::ApplicationWindow::builder()
         .title("Editor")
         .default_width(1000)
@@ -51,8 +49,8 @@ fn build_ui(app: &adw::Application) {
     mbox.append(&header_bar);
 
 
-    let (view, expander, text_buffer) = build_view(&win);
-    let menu = build_menu(&win, &expander, &text_buffer);
+    let (view, scrl_window, text_buffer) = build_view(&win);
+    let menu = build_menu(&win, &scrl_window, &text_buffer);
     mbox.append(&menu);
     mbox.append(&view);
 

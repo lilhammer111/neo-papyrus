@@ -6,7 +6,7 @@ use gtk::{PopoverMenuBar, TextBuffer};
 
 pub fn build_menu(
     win: &adw::ApplicationWindow,
-    expander: &adw::ExpanderRow,
+    scrl_window: &gtk::ScrolledWindow,
     text_bf: &TextBuffer,
 ) -> PopoverMenuBar {
     let file_menu = Menu::new();
@@ -25,7 +25,7 @@ pub fn build_menu(
     let popover_bar = PopoverMenuBar::from_model(Some(&mm));
 
     // create file actions handler
-    let file_actions_group = file_actions(win, expander, text_bf);
+    let file_actions_group = file_actions(win, scrl_window, text_bf);
 
     win.insert_action_group("file", Some(&file_actions_group));
     popover_bar
