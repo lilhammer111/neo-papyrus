@@ -21,7 +21,7 @@ pub fn render_children_dir(
 
         // 遍历传进来的dir，将文件转为btn， 将目录转为expander
         while let Some(file_info) = file_iter.next_file(gio::Cancellable::NONE).unwrap() {
-            // 获取文件类型 file_kind，文件名 fname， 文件路径 fpath
+            // 获取文件类型 file_kind，文件名 file_name， 文件路径 fpath
             let pb = file_info.name();
             println!("pb: {}", pb.to_str().unwrap());
             let file_name = pb.to_str().unwrap();
@@ -61,12 +61,10 @@ pub fn render_children_dir(
                 // 否则文件类型为常规文件 Regular
 
                 // 设置文件icon
-                let mut icon_name;
+                let  icon_name;
 
                 match content_type.as_str() {
-                    "text/markdown" => {
-                        icon_name = "text-markdown";
-                    }
+                    "text/markdown" => icon_name = "text-markdown",
                     _ => icon_name = "text-x-generic-symbolic",
                 }
                 // 设置相应的item icon

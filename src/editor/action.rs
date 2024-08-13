@@ -1,9 +1,9 @@
 use crate::util::{render_children_dir, INDENT_MARGIN};
 use adw::gio;
 use adw::gio::{ActionEntry, SimpleActionGroup};
-use adw::prelude::{ActionMapExtManual, FileExt, PreferencesRowExt, SettingsExt};
-use gtk::prelude::{DialogExt, FileChooserExt, GtkWindowExt, WidgetExt};
-use gtk::{FileChooserAction, ResponseType, TextBuffer};
+use adw::prelude::{ActionMapExtManual, ExpanderRowExt, FileExt, PreferencesRowExt, SettingsExt};
+use gtk::prelude::{DialogExt, FileChooserExt, GtkWindowExt, ListBoxRowExt, WidgetExt};
+use gtk::{FileChooserAction, Label, ResponseType, TextBuffer};
 
 use crate::APP_ID;
 
@@ -35,9 +35,15 @@ pub fn file_actions(
             dialog.connect_response(move |dialog, resp_kind| {
                 if resp_kind == ResponseType::Accept {
                     if let Some(gio_file) = dialog.file() {
+                        // new an empty child
+                        // expander_cloned.set_child(None::<&Label>);
+                        expander_cloned.remove(&expander_cloned.child().unwrap());
+
+                        // set project name to expander
                         let fname_pb = gio_file.basename().unwrap();
                         let dirname = fname_pb.to_str().unwrap();
                         expander_cloned.set_title(dirname);
+
                         render_children_dir(
                             &gio_file,
                             &text_bf_cloned,
