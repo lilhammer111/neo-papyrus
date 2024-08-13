@@ -1,4 +1,4 @@
-use crate::util::{render_children_dir, INDENT_MARGIN};
+use crate::core::dir::{render_children_dir, INDENT_MARGIN};
 use crate::APP_ID;
 use adw::prelude::PreferencesRowExt;
 use adw::{gio, ExpanderRow};
@@ -14,6 +14,7 @@ pub fn build_view(_win: &adw::ApplicationWindow) -> (gtk::Box, ScrolledWindow, T
     let root_expander = ExpanderRow::builder()
         .overflow(Hidden)
         .css_classes(vec!["root-expander"])
+        .icon_name("org.gnome.Software.Create")
         .title("No Project")
         .expanded(false) // 默认不展开
         .build();

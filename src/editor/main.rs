@@ -1,8 +1,8 @@
 mod action;
 mod menu;
 mod shortcuts;
-mod util;
 mod view;
+mod core;
 
 use crate::menu::build_menu;
 use crate::shortcuts::setup_shortcuts;

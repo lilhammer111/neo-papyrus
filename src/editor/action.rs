@@ -1,4 +1,4 @@
-use crate::util::{render_children_dir, INDENT_MARGIN};
+use crate::core::dir::{render_children_dir, INDENT_MARGIN};
 use crate::APP_ID;
 use adw::gio::{ActionEntry, SimpleActionGroup};
 use adw::prelude::{ActionMapExtManual, FileExt, SettingsExt};
@@ -40,6 +40,7 @@ pub fn file_actions(
 
                         // 通过设置一个新的root expander，来清空原先的root expander
                         let root_expander = ExpanderRow::builder()
+                            .icon_name("org.gnome.Software.Create")
                             .overflow(Overflow::Hidden)
                             .css_classes(vec!["root-expander"])
                             .title(dirname)
