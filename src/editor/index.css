@@ -1,0 +1,61 @@
+button.file-btn {
+    min-height: 30px;
+    padding: 0;
+    background-color: transparent; /* 将Button的背景色设置为透明 */
+}
+
+.root-expander {
+    border-bottom-style: none;
+}
+
+row.root-expander row {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+row.dir-expander > box {
+    padding-left: 20px;
+}
+
+.expander-row-arrow {
+    margin-right: 20px;
+}
+
+row.dir-expander > box > list > row > box {
+    min-height: 30px;
+    padding-left: 0;
+    padding-right: 0;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+row.dir-expander > box > list > row, row.dir-expander {
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+row.dir-expander > box > list > row > box > box {
+    border-spacing: 0 0;
+}
+
+textview.view {
+    padding: 10px 20px 10px 20px;
+}
+
+list {
+    background-color: transparent; /* 将ListBox的背景色设置为白色 */
+}
+
+image.icon {
+    margin-right: 1px;
+}
+
+menubar {
+    min-height: 30px;
+}
+
+headerbar {
+    min-height: 20px;
+}

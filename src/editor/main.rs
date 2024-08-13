@@ -1,7 +1,7 @@
 mod menu;
 mod shortcuts;
-mod view;
 mod util;
+mod view;
 
 use crate::menu::build_menu;
 use crate::shortcuts::setup_shortcuts;
@@ -9,6 +9,7 @@ use crate::view::build_view;
 use adw::glib::ExitCode;
 use adw::prelude::*;
 use adw::{self, gdk};
+use gtk::gio;
 use gtk::Align::{End, Start};
 use gtk::Orientation::Vertical;
 fn main() -> ExitCode {
@@ -22,69 +23,10 @@ fn main() -> ExitCode {
 }
 
 fn load_css(_: &adw::Application) {
-    let css = "
-    button.file-btn {
-        min-height: 30px;
-        padding: 0;
-        background-color: transparent; /* 将Button的背景色设置为透明 */
-    }
-
-    .root-expander {
-        border-bottom-style: none;
-    }
-
-    row.root-expander row {
-        padding-left: 0;
-        padding-right: 0;
-    }
-
-    row.dir-expander > box {
-        padding-left: 20px;
-    }
-
-    row.dir-expander > box > list > row > box {
-        min-height: 30px;
-        padding-left: 0;
-        padding-right: 0;
-        margin-left: 0;
-        margin-right: 0;
-    }
-
-    row.dir-expander > box > list > row, row.dir-expander {
-        padding-left: 0;
-        padding-right: 0;
-        padding-top: 0;
-        padding-bottom: 0;
-    }
-
-    row.dir-expander > box > list > row > box > box {
-        border-spacing: 0 0;
-    }
-
-    textview.view {
-        padding: 10px 20px 10px 20px;
-    }
-
-    list {
-        background-color: transparent; /* 将ListBox的背景色设置为白色 */
-    }
-
-    image.icon {
-        margin-right: 1px;
-    }
-
-    menubar {
-        min-height: 30px;
-    }
-
-    headerbar {
-        min-height: 20px;
-    }
-    ";
     // 创建和加载 CSS Provider
     let provider = gtk::CssProvider::new();
-    provider.load_from_data(css);
-
+    let gfile = gio::File::for_path("src/editor/index.css");
+    provider.load_from_file(&gfile);
     gtk::style_context_add_provider_for_display(
         &gdk::Display::default().expect("Error initializing GTK display"),
         &provider,
@@ -95,10 +37,10 @@ fn build_ui(app: &adw::Application) {
     let win = adw::ApplicationWindow::builder()
         .title("Editor")
         .default_width(1000)
-        .default_height(780)
+        .default_height(800)
+        .maximized(true)
         .application(app)
         .build();
-
 
     let mbox = gtk::Box::builder().orientation(Vertical).build();
 
@@ -106,7 +48,7 @@ fn build_ui(app: &adw::Application) {
     let header_bar = adw::HeaderBar::builder().build();
     mbox.append(&header_bar);
 
-    let menu = build_menu(&win,&expander, &text_buffer);
+    let menu = build_menu(&win, &expander, &text_buffer);
     mbox.append(&menu);
     mbox.append(&view);
 

@@ -9,6 +9,7 @@ pub fn build_view(_win: &adw::ApplicationWindow) -> (gtk::Box, ExpanderRow, Text
     let main_box = gtk::Box::new(Horizontal, 0);
 
     let expander_row = ExpanderRow::builder()
+        .overflow(Hidden)
         .css_classes(vec!["root-expander"])
         .title("No Project")
         .expanded(false) // 默认不展开
