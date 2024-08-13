@@ -1,3 +1,4 @@
+mod action;
 mod menu;
 mod shortcuts;
 mod util;
@@ -33,6 +34,7 @@ fn load_css(_: &adw::Application) {
         gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
     )
 }
+
 fn build_ui(app: &adw::Application) {
     let win = adw::ApplicationWindow::builder()
         .title("Editor")

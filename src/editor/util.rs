@@ -1,9 +1,11 @@
-use adw::prelude::{ExpanderRowExt, FileEnumeratorExt, FileExt, FileExtManual};
+use adw::prelude::{ExpanderRowExt, FileEnumeratorExt, FileExt, FileExtManual, ListModelExt};
 use adw::{gio, ExpanderRow};
 use gtk::prelude::{TextBufferExt, WidgetExt};
 use gtk::Align::Start;
 use gtk::GestureClick;
+use std::process::Command;
 use std::str::from_utf8;
+use adw::gdk::cairo;
 
 pub fn render_directory(
     dir: &gio::File,
@@ -14,18 +16,25 @@ pub fn render_directory(
     if let Ok(file_iter) =
         dir.enumerate_children("*", gio::FileQueryInfoFlags::NONE, gio::Cancellable::NONE)
     {
+        // 初始化子项用于设置expander 的 enable_expansion
+        let mut child_count = 0;
+
         // 遍历传进来的dir，将文件转为btn， 将目录转为expander
         while let Some(file_info) = file_iter.next_file(gio::Cancellable::NONE).unwrap() {
             // 获取文件类型 file_kind，文件名 fname， 文件路径 fpath
-            let file_kind = file_info.file_type();
             let pb = file_info.name();
-            let file_name = pb.file_name().unwrap().to_str().unwrap();
-            let file_path = dir.child(file_name);
+            println!("pb: {}", pb.to_str().unwrap());
+            let file_name = pb.to_str().unwrap();
 
-            if file_name == ".git" {
+            let file_kind = file_info.file_type();
+            let content_type = file_info.content_type().unwrap();
+            println!("file: {}, content type: {}", file_name, content_type);
+
+            if should_skip(&file_name, file_kind, &content_type) {
                 continue;
             }
 
+            let file_path = dir.child(file_name);
             if file_kind == gio::FileType::Directory {
                 // 如果文件类型为目录
 
@@ -42,7 +51,10 @@ pub fn render_directory(
 
                 // 将子文件夹expander添加到父expander中
                 parent_expander.add_row(&child_expander);
+                child_count += 1;
 
+                let count = parent_expander.observe_children().n_items();
+                println!("\ncount: {count}\n");
                 // 递归调用 render_directory方法来创建子文件夹的子项
                 render_directory(&file_path, &text_buffer, &child_expander, depth);
             } else {
@@ -68,6 +80,7 @@ pub fn render_directory(
 
                 // 将子文件添加到传入的父节点expander
                 parent_expander.add_row(&btn);
+                child_count += 1;
 
                 // 为子文件添加双击事件： 渲染文本内容到右侧text view
                 let gesture = GestureClick::builder()
@@ -95,5 +108,43 @@ pub fn render_directory(
                 btn.add_controller(gesture);
             }
         }
+
+        if child_count == 0  {
+            parent_expander.set_enable_expansion(false);
+            parent_expander.set_opacity(0.4);
+        }
     }
+}
+
+#[cfg(target_os = "linux")]
+#[allow(unused)]
+fn mime_type(fpath: &str) -> std::io::Result<()> {
+    let output = Command::new("file")
+        .arg("--mime-type")
+        .arg(fpath)
+        .output()?;
+    let output_str = String::from_utf8_lossy(&output.stdout);
+    println!("{}", output_str);
+    Ok(())
+    // Ok(output_str.trim().to_string())
+}
+
+/// Determines whether a file should be skipped based on its name and content type.
+/// Skips hidden files (those starting with a dot) and files that are neither markdown
+/// nor plain text. Directories are not skipped.
+///
+/// # Arguments
+/// * `file_name` - The name of the file to check.
+/// * `file_kind` - The type of the file, expecting values from `gio::FileType`.
+/// * `content_type` - The MIME type of the file as a string slice.
+///
+/// # Return
+/// Returns `true` if the file should be skipped, otherwise `false`.
+fn should_skip(file_name: &str, file_kind: gio::FileType, content_type: &str) -> bool {
+    let is_hidden_file = file_name.starts_with(".");
+    let is_not_plain_text = content_type != "text/plain";
+    let is_not_markdown = content_type != "text/markdown";
+
+    is_hidden_file
+        || (file_kind == gio::FileType::Regular && (is_not_plain_text && is_not_markdown))
 }
