@@ -5,13 +5,13 @@ use gtk::Align::Start;
 use gtk::GestureClick;
 use std::process::Command;
 use std::str::from_utf8;
-use adw::gdk::cairo;
 
-pub fn render_directory(
+pub const INDENT_MARGIN: i32 = 20;
+pub fn render_children_dir(
     dir: &gio::File,
     text_buffer: &gtk::TextBuffer,
     parent_expander: &ExpanderRow, // 通过 Option 参数来插入子项
-    depth: i32,
+    indent_margin: i32,
 ) {
     if let Ok(file_iter) =
         dir.enumerate_children("*", gio::FileQueryInfoFlags::NONE, gio::Cancellable::NONE)
@@ -39,7 +39,7 @@ pub fn render_directory(
                 // 如果文件类型为目录
 
                 // 设置相应的item icon
-                let icon_name = "folder-symbolic";
+                let icon_name = "inode-directory-symbolic";
 
                 // 为该子文件夹创建一个expander
                 let child_expander = ExpanderRow::builder()
@@ -56,16 +56,24 @@ pub fn render_directory(
                 let count = parent_expander.observe_children().n_items();
                 println!("\ncount: {count}\n");
                 // 递归调用 render_directory方法来创建子文件夹的子项
-                render_directory(&file_path, &text_buffer, &child_expander, depth);
+                render_children_dir(&file_path, &text_buffer, &child_expander, indent_margin);
             } else {
                 // 否则文件类型为常规文件 Regular
 
+                // 设置文件icon
+                let mut icon_name;
+
+                match content_type.as_str() {
+                    "text/markdown" => {
+                        icon_name = "text-markdown";
+                    }
+                    _ => icon_name = "text-x-generic-symbolic",
+                }
                 // 设置相应的item icon
-                let icon_name = "text-x-generic-symbolic";
 
                 // 为该子文件创建按钮
                 let btn = gtk::Button::builder()
-                    .margin_start(depth) // 根据深度设置左侧缩进
+                    .margin_start(indent_margin) // 根据深度设置左侧缩进
                     .child(
                         &adw::ButtonContent::builder()
                             .icon_name(icon_name)
@@ -109,7 +117,7 @@ pub fn render_directory(
             }
         }
 
-        if child_count == 0  {
+        if child_count == 0 {
             parent_expander.set_enable_expansion(false);
             parent_expander.set_opacity(0.4);
         }

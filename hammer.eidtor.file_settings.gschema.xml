@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<schemalist gettext-domain="hammer-editor">
+    <schema id="wang.hammer.editor" path="/wang/hammer/editor/">
+        <key name="last-opened-dir" type="s">
+            <default>"/home/lilhammer/gtk_test/"</default>
+            <summary>Last opened directory</summary>
+            <description>The path of the last directory opened by the user.</description>
+        </key>
+        <key name="open-method-type" type="s">
+            <default>"reopen"</default>
+            <summary>Open method type</summary>
+            <description>The path of the last directory opened by the user.</description>
+            <description>Defines the method to open files. 'reopen' to automatically reopen the last session, 'ask' to ask the user.</description>
+        </key>
+    </schema>
+</schemalist>

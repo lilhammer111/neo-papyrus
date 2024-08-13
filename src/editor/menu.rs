@@ -1,7 +1,7 @@
 use crate::action::file_actions;
 use adw::gio::{Menu, MenuModel};
 use adw::prelude::Cast;
-use gtk::prelude::{FileChooserExt, WidgetExt};
+use gtk::prelude::WidgetExt;
 use gtk::{PopoverMenuBar, TextBuffer};
 
 pub fn build_menu(

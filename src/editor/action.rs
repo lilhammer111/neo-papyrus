@@ -1,8 +1,11 @@
-use crate::util::render_directory;
+use crate::util::{render_children_dir, INDENT_MARGIN};
+use adw::gio;
 use adw::gio::{ActionEntry, SimpleActionGroup};
-use adw::prelude::{ActionMapExtManual, FileExt, PreferencesRowExt};
+use adw::prelude::{ActionMapExtManual, FileExt, PreferencesRowExt, SettingsExt};
 use gtk::prelude::{DialogExt, FileChooserExt, GtkWindowExt, WidgetExt};
 use gtk::{FileChooserAction, ResponseType, TextBuffer};
+
+use crate::APP_ID;
 
 pub fn file_actions(
     win: &adw::ApplicationWindow,
@@ -29,13 +32,24 @@ pub fn file_actions(
             dialog.add_button("Open", ResponseType::Accept);
             let expander_cloned = expander_cloned.clone();
             let text_bf_cloned = text_bf_cloned.clone();
-            dialog.connect_response(move |dialog, rkind| {
-                if rkind == ResponseType::Accept {
+            dialog.connect_response(move |dialog, resp_kind| {
+                if resp_kind == ResponseType::Accept {
                     if let Some(gio_file) = dialog.file() {
-                        let pb = gio_file.basename().unwrap();
-                        let dirname = pb.file_name().unwrap().to_str().unwrap();
+                        let fname_pb = gio_file.basename().unwrap();
+                        let dirname = fname_pb.to_str().unwrap();
                         expander_cloned.set_title(dirname);
-                        render_directory(&gio_file, &text_bf_cloned, &expander_cloned, 20);
+                        render_children_dir(
+                            &gio_file,
+                            &text_bf_cloned,
+                            &expander_cloned,
+                            INDENT_MARGIN,
+                        );
+
+                        let path_pb = gio_file.path().unwrap();
+                        let settings = gio::Settings::new(APP_ID);
+                        settings
+                            .set_string("last-opened-dir", path_pb.to_str().unwrap())
+                            .unwrap();
                     }
                 }
                 dialog.close();

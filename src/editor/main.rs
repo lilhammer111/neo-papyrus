@@ -13,10 +13,10 @@ use adw::{self, gdk};
 use gtk::gio;
 use gtk::Align::{End, Start};
 use gtk::Orientation::Vertical;
+
+const APP_ID: &str = "wang.hammer.editor";
 fn main() -> ExitCode {
-    let app = adw::Application::builder()
-        .application_id("hello.editor")
-        .build();
+    let app = adw::Application::builder().application_id(APP_ID).build();
     app.connect_activate(build_ui);
     app.connect_startup(setup_shortcuts);
     app.connect_startup(load_css);
@@ -36,6 +36,8 @@ fn load_css(_: &adw::Application) {
 }
 
 fn build_ui(app: &adw::Application) {
+
+
     let win = adw::ApplicationWindow::builder()
         .title("Editor")
         .default_width(1000)
@@ -45,11 +47,11 @@ fn build_ui(app: &adw::Application) {
         .build();
 
     let mbox = gtk::Box::builder().orientation(Vertical).build();
-
-    let (view, expander, text_buffer) = build_view(&win);
-    let header_bar = adw::HeaderBar::builder().build();
+    let header_bar = adw::HeaderBar::new();
     mbox.append(&header_bar);
 
+
+    let (view, expander, text_buffer) = build_view(&win);
     let menu = build_menu(&win, &expander, &text_buffer);
     mbox.append(&menu);
     mbox.append(&view);

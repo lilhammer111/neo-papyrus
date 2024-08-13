@@ -1,14 +1,17 @@
-use adw::ExpanderRow;
+use crate::util::{render_children_dir, INDENT_MARGIN};
+use crate::APP_ID;
+use adw::prelude::PreferencesRowExt;
+use adw::{gio, ExpanderRow};
 use gtk::prelude::TextViewExt;
 use gtk::prelude::*;
 use gtk::Orientation::Horizontal;
-use gtk::{PolicyType, ScrolledWindow, TextBuffer, WrapMode};
 use gtk::Overflow::Hidden;
+use gtk::{PolicyType, ScrolledWindow, TextBuffer, WrapMode};
 
 pub fn build_view(_win: &adw::ApplicationWindow) -> (gtk::Box, ExpanderRow, TextBuffer) {
     let main_box = gtk::Box::new(Horizontal, 0);
 
-    let expander_row = ExpanderRow::builder()
+    let root_expander = ExpanderRow::builder()
         .overflow(Hidden)
         .css_classes(vec!["root-expander"])
         .title("No Project")
@@ -19,7 +22,7 @@ pub fn build_view(_win: &adw::ApplicationWindow) -> (gtk::Box, ExpanderRow, Text
         .vscrollbar_policy(PolicyType::Automatic)
         .hscrollbar_policy(PolicyType::Never)
         // .hscrollbar_policy(PolicyType::Automatic)
-        .child(&expander_row)
+        .child(&root_expander)
         .width_request(280)
         .overflow(Hidden)
         .max_content_width(400)
@@ -46,5 +49,18 @@ pub fn build_view(_win: &adw::ApplicationWindow) -> (gtk::Box, ExpanderRow, Text
 
     main_box.append(&tv_scroller);
 
-    (main_box, expander_row, text_buffer)
+    // initialize global settings
+    let settings = gio::Settings::new(APP_ID);
+    let open_method = settings.string("open-method-type");
+    let last_dpath = settings.string("last-opened-dir");
+    let dir = gio::File::for_path(last_dpath);
+
+    // initialize dir sidebar
+    if open_method == "reopen" {
+        render_children_dir(&dir, &text_buffer, &root_expander, INDENT_MARGIN);
+        let pb = dir.basename().unwrap();
+        root_expander.set_title(pb.to_str().unwrap());
+    }
+
+    (main_box, root_expander, text_buffer)
 }
