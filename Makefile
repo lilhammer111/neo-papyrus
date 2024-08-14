@@ -10,7 +10,7 @@ debug:
 .PHONY: setup
 setup:
 ifndef SCHEMA
-	$(error SCHEMA is undefined. Use 'make install SCHEMA=filename.gschema.xml')
+	$(error SCHEMA is undefined. Use 'make setup SCHEMA=filename.gschema.xml')
 endif
 	@if [ ! -d "$(HOME)/.local/share/glib-2.0/schemas" ]; then \
 		echo "Creating directory $(HOME)/.local/share/glib-2.0/schemas"; \

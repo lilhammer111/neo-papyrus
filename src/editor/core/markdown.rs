@@ -1,5 +1,7 @@
 use pulldown_cmark::CowStr;
 use pulldown_cmark::{Event, HeadingLevel, Options, Parser, Tag, TagEnd};
+use header::handle_start;
+
 pub fn parse(markdown: &str) -> CowStr {
     // 解析 Markdown 文本
     let parser = Parser::new_ext(markdown, Options::all());
@@ -9,24 +11,15 @@ pub fn parse(markdown: &str) -> CowStr {
 
     for event in parser {
         match event {
-            Event::Start(tag) => {
-                match tag {
-                    Tag::Heading { level, .. } => {
-                        let font_size = match level {
-                            HeadingLevel::H1 => "24pt", // Header 1 的字体大小
-                            HeadingLevel::H2 => "20pt", // Header 2 的字体大小
-                            HeadingLevel::H3 => "16pt", // Header 3 的字体大小
-                            _ => "14pt",                // 其他 Header 的字体大小
-                        };
-                        pango_markup
-                            .push_str(&format!("\n<span size='{}' weight='bold'>", font_size));
-                    }
-                    Tag::List(_) => {
-                        list_indent_level += 1;
-                    }
-                    _ => (),
+            Event::Start(tag) => match tag {
+                Tag::Heading { level, .. } => {
+                    handle_start(level, &pango_markup);
                 }
-            }
+                Tag::List(_) => {
+                    list_indent_level += 1;
+                }
+                _ => (),
+            },
             Event::Text(text) => {
                 let indent = "    ".repeat(list_indent_level); // 每一级缩进
                 if list_indent_level > 0 {
@@ -52,4 +45,22 @@ pub fn parse(markdown: &str) -> CowStr {
     }
 
     CowStr::from(pango_markup)
+}
+
+mod header {
+    use pulldown_cmark::HeadingLevel;
+
+    pub fn handle_start(level: HeadingLevel, mut pango_markup: &str) {
+        let font_size = match level {
+            HeadingLevel::H1 => "24pt", // Header 1 的字体大小
+            HeadingLevel::H2 => "20pt", // Header 2 的字体大小
+            HeadingLevel::H3 => "16pt", // Header 3 的字体大小
+            _ => "14pt",                // 其他 Header 的字体大小
+        };
+        pango_markup.push_str(&format!("\n<span size='{}' weight='bold'>", font_size));
+    }
+
+    pub fn handle_end() {}
+
+    pub fn handle_text() {}
 }
