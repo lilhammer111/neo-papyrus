@@ -102,14 +102,14 @@ fn build_tool_ui(main_box: &gtk::Box) {
 
     // 创建“查看源码”工具按钮
     // 加载和缩放 SVG 图标
-    let pixbuf = Pixbuf::from_file_at_scale("asset/code_icon.svg", 16, 16, true)
-        .expect("Failed to load SVG");
-    let code_icon = gtk::Picture::for_pixbuf(&pixbuf);
     let source_btn = gtk::Button::builder()
         // .icon_name("text-x.gcode")
         .cursor(&gdk::Cursor::from_name("pointer", None).unwrap())
         .focus_on_click(true)
-        .child(&code_icon)
+        .child(&gtk::Picture::for_pixbuf(
+            &Pixbuf::from_file_at_scale("asset/source-code.svg", 16, 16, true)
+                .expect("Failed to load SVG"),
+        ))
         .tooltip_text("show source code of markdown")
         .has_frame(false)
         .halign(Center)
@@ -121,6 +121,7 @@ fn build_tool_ui(main_box: &gtk::Box) {
 
     // 打开终端 工具按钮
     let terminal_btn = gtk::Button::builder()
+        .cursor(&gdk::Cursor::from_name("pointer", None).unwrap())
         .icon_name("gnome-terminal-symbolic")
         .tooltip_text("open terminal")
         .has_frame(false)
@@ -132,6 +133,7 @@ fn build_tool_ui(main_box: &gtk::Box) {
 
     // 分享按钮
     let share_btn = gtk::Button::builder()
+        .cursor(&gdk::Cursor::from_name("pointer", None).unwrap())
         .icon_name("send-to-symbolic")
         .tooltip_text("share with your friends")
         .has_frame(false)
@@ -143,8 +145,25 @@ fn build_tool_ui(main_box: &gtk::Box) {
 
     // 游戏按钮
     let game_btn = gtk::Button::builder()
+        .cursor(&gdk::Cursor::from_name("pointer", None).unwrap())
         .icon_name("games-app-symbolic")
         .tooltip_text("share with your friends")
+        .has_frame(false)
+        .halign(Center)
+        .valign(Start)
+        .margin_start(GAP)
+        .margin_end(GAP)
+        .build();
+
+    // shortcut 按钮
+    let shortcut_icon = gtk::Picture::for_pixbuf(
+        &Pixbuf::from_file_at_scale("asset/command.svg", 16, 16, true).unwrap(),
+    );
+    let shortcut_btn = gtk::Button::builder()
+        .cursor(&gdk::Cursor::from_name("pointer", None).unwrap())
+        .focus_on_click(true)
+        .child(&shortcut_icon)
+        .tooltip_text("show shortcut for the app")
         .has_frame(false)
         .halign(Center)
         .valign(Start)
@@ -157,6 +176,7 @@ fn build_tool_ui(main_box: &gtk::Box) {
     tool_box.append(&terminal_btn);
     tool_box.append(&share_btn);
     tool_box.append(&game_btn);
+    tool_box.append(&shortcut_btn);
 
     // 将这三个组件添加到主盒子
     main_box.append(&tool_box);
