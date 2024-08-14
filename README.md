@@ -1,6 +1,6 @@
 # About Neo Papyrus
 
-Let's end the era of paper books together.
+No more paper book.
 
 ## Dependency
 
