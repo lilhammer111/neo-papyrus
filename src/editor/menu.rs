@@ -2,12 +2,12 @@ use crate::action::file_actions;
 use adw::gio::{Menu, MenuModel};
 use adw::prelude::Cast;
 use gtk::prelude::WidgetExt;
-use gtk::{PopoverMenuBar, TextBuffer};
+use gtk::{PopoverMenuBar};
 
 pub fn build_menu(
     win: &adw::ApplicationWindow,
     scrl_window: &gtk::ScrolledWindow,
-    text_bf: &TextBuffer,
+    tabview: &adw::TabView,
 ) -> PopoverMenuBar {
     let file_menu = Menu::new();
     file_menu.append(Some("New Project"), Some("file.newp"));
@@ -25,7 +25,7 @@ pub fn build_menu(
     let popover_bar = PopoverMenuBar::from_model(Some(&mm));
 
     // create file actions handler
-    let file_actions_group = file_actions(win, scrl_window, text_bf);
+    let file_actions_group = file_actions(win, scrl_window, tabview);
 
     win.insert_action_group("file", Some(&file_actions_group));
     popover_bar

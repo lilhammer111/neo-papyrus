@@ -2,7 +2,7 @@ use crate::core::markdown::parse;
 use adw::prelude::{ExpanderRowExt, FileEnumeratorExt, FileExt, FileExtManual};
 use adw::{gio, ExpanderRow};
 use glib::GString;
-use gtk::prelude::{TextBufferExt, WidgetExt};
+use gtk::prelude::{TextBufferExt, TextViewExt, WidgetExt};
 use gtk::Align::Start;
 use gtk::GestureClick;
 use std::process::Command;
@@ -10,9 +10,10 @@ use std::str::from_utf8;
 
 pub const INDENT_MARGIN: i32 = 20;
 const UNEXPECTED_FILE_OPACITY: f64 = 0.6;
+
 pub fn render_children_dir(
     dir: &gio::File,
-    text_buffer: &gtk::TextBuffer,
+    tabview: &adw::TabView,
     parent_expander: &ExpanderRow, // 通过 Option 参数来插入子项
     indent_margin: i32,
 ) {
@@ -35,10 +36,10 @@ pub fn render_children_dir(
                 continue;
             }
 
-            let file_path = dir.child(file_name);
-            if file_kind == gio::FileType::Directory {
-                // 如果文件类型为目录
+            let child_gfile = dir.child(file_name);
 
+            // 如果文件类型为目录
+            if file_kind == gio::FileType::Directory {
                 // 设置相应的item icon
                 // let icon_name = "inode-directory-symbolic";
                 let icon_name = "system-file-manager";
@@ -56,10 +57,11 @@ pub fn render_children_dir(
                 child_count += 1;
 
                 // 递归调用 render_directory方法来创建子文件夹的子项
-                render_children_dir(&file_path, &text_buffer, &child_expander, indent_margin);
-            } else {
-                // 否则文件类型为常规文件 Regular
+                render_children_dir(&child_gfile, tabview, &child_expander, indent_margin);
+            }
 
+            // 否则文件类型为常规文件 Regular
+            if file_kind == gio::FileType::Regular {
                 // 设置文件icon
                 let icon_name = content_type_to_icon(content_type.as_str());
 
@@ -88,33 +90,10 @@ pub fn render_children_dir(
                 }
                 parent_expander.add_row(&file_btn);
 
-                // 为子文件添加**双击事件**： 渲染文本内容到右侧text view
-                let gesture = GestureClick::builder()
-                    .button(1)
-                    .propagation_phase(gtk::PropagationPhase::Capture)
-                    .build();
+                let child_gfile_cloned = child_gfile.clone();
+                let tabview_cloned = tabview.clone();
 
-                let file_path_clone = file_path.clone();
-                let text_buffer_clone = text_buffer.clone();
-                gesture.connect_released(move |_, n_press, _, _| {
-                    if n_press == 2 {
-                        if let Ok((contents, _)) =
-                            file_path_clone.load_contents(gio::Cancellable::NONE)
-                        {
-                            if let Ok(md) = from_utf8(&contents) {
-                                let pango_markup = parse(md);
-                                text_buffer_clone.set_text("");
-                                text_buffer_clone.insert_markup(&mut text_buffer_clone.end_iter(), &pango_markup);
-                                // text_buffer_clone.set_text();
-                            } else {
-                                // text_buffer_clone.set_text("Failed to get file text");
-                                println!("failed to get file text")
-                            }
-                        }
-                    }
-                });
-
-                file_btn.add_controller(gesture);
+                add_signal_for_file(&file_btn, child_gfile_cloned, tabview_cloned)
             }
         }
 
@@ -123,6 +102,47 @@ pub fn render_children_dir(
             parent_expander.set_opacity(UNEXPECTED_FILE_OPACITY);
         }
     }
+}
+
+/// 为子文件添加**双击事件**： 渲染文本内容到右侧text view
+fn add_signal_for_file(btn: &gtk::Button, file: gio::File, tabview: adw::TabView) {
+    let gesture = GestureClick::builder()
+        .button(1)
+        .propagation_phase(gtk::PropagationPhase::Capture)
+        .build();
+
+    // let text_buffer_clone = text_buffer.clone();
+    gesture.connect_released(move |_, n_press, _, _| {
+        if n_press >= 2 {
+            if let Ok((contents, _)) = file.load_contents(gio::Cancellable::NONE) {
+                // 当双击文件时，为该文件创建创建一个带tab bar的文本显示区域
+                let text_view = gtk::TextView::builder()
+                    .editable(false)
+                    .vexpand(true)
+                    .hexpand(true)
+                    .wrap_mode(gtk::WrapMode::Word)
+                    .build();
+                let text_buffer = text_view.buffer();
+                if let Ok(md) = from_utf8(&contents) {
+                    let pango_markup = parse(md);
+                    // text_buffer.set_text("");
+                    text_buffer.insert_markup(&mut text_buffer.end_iter(), &pango_markup);
+                    // text_buffer_clone.set_text();
+                } else {
+                    // text_buffer_clone.set_text("Failed to get file text");
+                    println!("failed to get file text")
+                }
+
+                // 相当于向文本区域添加一个新的tab和页面
+                let page = tabview.append(&text_view);
+                let filename_pb = file.basename().unwrap();
+                let filename = filename_pb.to_str().unwrap();
+                page.set_title(filename)
+            }
+        }
+    });
+
+    btn.add_controller(gesture);
 }
 
 #[cfg(target_os = "linux")]

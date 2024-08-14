@@ -49,8 +49,8 @@ fn build_ui(app: &adw::Application) {
     mbox.append(&header_bar);
 
 
-    let (view, scrl_window, text_buffer) = build_view(&win);
-    let menu = build_menu(&win, &scrl_window, &text_buffer);
+    let (view, scrl_window, tabview) = build_view(&win);
+    let menu = build_menu(&win, &scrl_window, &tabview);
     mbox.append(&menu);
     mbox.append(&view);
 

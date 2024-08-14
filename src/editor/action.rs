@@ -4,12 +4,12 @@ use adw::gio::{ActionEntry, SimpleActionGroup};
 use adw::prelude::{ActionMapExtManual, FileExt, SettingsExt};
 use adw::{gio, ExpanderRow};
 use gtk::prelude::{DialogExt, FileChooserExt, GtkWindowExt, WidgetExt};
-use gtk::{FileChooserAction, Overflow, ResponseType, TextBuffer};
+use gtk::{FileChooserAction, Overflow, ResponseType};
 
 pub fn file_actions(
     win: &adw::ApplicationWindow,
     scrl_window: &gtk::ScrolledWindow,
-    text_bf: &TextBuffer,
+    tabview: &adw::TabView,
 ) -> SimpleActionGroup {
     let action_new_proj = ActionEntry::builder("newp")
         .activate(move |_, _, _| println!("new project"))
@@ -17,7 +17,7 @@ pub fn file_actions(
 
     let win = win.clone();
     let scrl_window_cloned = scrl_window.clone();
-    let text_bf_cloned = text_bf.clone();
+    let tabview_cloned = tabview.clone();
     let action_open_proj = ActionEntry::builder("openp")
         .activate(move |_, _, _| {
             let dialog = gtk::FileChooserDialog::builder()
@@ -30,7 +30,7 @@ pub fn file_actions(
             dialog.add_button("Cancel", ResponseType::Cancel);
             dialog.add_button("Open", ResponseType::Accept);
             let scrl_window_cloned = scrl_window_cloned.clone();
-            let text_bf_cloned = text_bf_cloned.clone();
+            let tabview_cloned = tabview_cloned.clone();
             dialog.connect_response(move |dialog, resp_kind| {
                 if resp_kind == ResponseType::Accept {
                     if let Some(g_dir) = dialog.file() {
@@ -50,7 +50,7 @@ pub fn file_actions(
                         // 递归生成子目录
                         render_children_dir(
                             &g_dir,
-                            &text_bf_cloned,
+                            &tabview_cloned,
                             &root_expander,
                             INDENT_MARGIN,
                         );

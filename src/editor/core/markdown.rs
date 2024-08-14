@@ -19,7 +19,7 @@ pub fn parse(markdown: &str) -> CowStr {
                             _ => "14pt",                // 其他 Header 的字体大小
                         };
                         pango_markup
-                            .push_str(&format!("<span size='{}' weight='bold'>", font_size));
+                            .push_str(&format!("\n<span size='{}' weight='bold'>", font_size));
                     }
                     Tag::List(_) => {
                         list_indent_level += 1;
@@ -31,7 +31,7 @@ pub fn parse(markdown: &str) -> CowStr {
                 let indent = "    ".repeat(list_indent_level); // 每一级缩进
                 if list_indent_level > 0 {
                     pango_markup.push_str(&format!(
-                        "<span foreground='red'>{}• {}</span>\n\n",
+                        "\n<span foreground='red'>{}• {}</span>\n",
                         indent, text
                     ));
                 } else {
@@ -40,7 +40,7 @@ pub fn parse(markdown: &str) -> CowStr {
             }
             Event::End(tag) => match tag {
                 TagEnd::Heading(_) => {
-                    pango_markup.push_str("</span>\n\n");
+                    pango_markup.push_str("</span>\n");
                 }
                 TagEnd::List(_) => {
                     list_indent_level = list_indent_level.saturating_sub(1);

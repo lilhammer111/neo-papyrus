@@ -3,17 +3,43 @@ use crate::APP_ID;
 use adw::prelude::{ExpanderRowExt, PreferencesRowExt};
 use adw::{gdk, gio, ExpanderRow, TabBar, TabView};
 use gtk::gdk_pixbuf::Pixbuf;
-use gtk::prelude::TextViewExt;
 use gtk::prelude::*;
 use gtk::Align::{Center, Start};
 use gtk::Orientation::{Horizontal, Vertical};
 use gtk::Overflow::Hidden;
-use gtk::{PolicyType, TextBuffer, WrapMode};
+use gtk::PolicyType;
 
 const GAP: i32 = 4;
-pub fn build_view(_win: &adw::ApplicationWindow) -> (gtk::Box, gtk::ScrolledWindow, TextBuffer) {
+pub fn build_view(_win: &adw::ApplicationWindow) -> (gtk::Box, gtk::ScrolledWindow, TabView) {
     let main_box = gtk::Box::new(Horizontal, 0);
 
+    let (sidebar, root_expander) = build_sidebar_ui(&main_box);
+
+    let tabview = build_text_ui(&main_box);
+    build_tool_ui(&main_box);
+
+    // initialize global settings
+    let settings = gio::Settings::new(APP_ID);
+    let open_method = settings.string("open-method-type");
+    let last_dpath = settings.string("last-opened-dir");
+    let dir = gio::File::for_path(last_dpath);
+
+    // initialize dir sidebar
+    if open_method == "reopen" {
+        render_children_dir(&dir, &tabview, &root_expander, INDENT_MARGIN);
+        root_expander.set_title(&root_dir_title(&dir));
+        root_expander.set_subtitle(&root_dir_subtitle(&dir));
+    }
+
+    (main_box, sidebar, tabview)
+}
+
+#[allow(unused)]
+fn add_signal(textview: &gtk::TextView) {
+    let _ = textview;
+}
+
+fn build_sidebar_ui(main_box: &gtk::Box) -> (gtk::ScrolledWindow, ExpanderRow) {
     let root_expander = ExpanderRow::builder()
         .overflow(Hidden)
         .css_classes(vec!["root-expander"])
@@ -33,34 +59,39 @@ pub fn build_view(_win: &adw::ApplicationWindow) -> (gtk::Box, gtk::ScrolledWind
         .vexpand(true)
         .margin_bottom(45)
         .build();
+    main_box.append(&sidebar_scrolled);
 
+    (sidebar_scrolled, root_expander)
+}
+
+fn build_text_ui(main_box: &gtk::Box) -> TabView {
     // 创建tab bar
     let tab_view = TabView::new();
     let tab_bar = TabBar::builder()
+        .name("tab-bar")
         .view(&tab_view)
         .autohide(true)
         // .end_action_widget()
-        .expand_tabs(true)
+        .expand_tabs(false)
         .build();
-
-    // 创建文本显示区域
-    let text_view = gtk::TextView::builder()
-        .editable(false)
-        .vexpand(true)
-        .hexpand(true)
-        .wrap_mode(WrapMode::Word)
-        .build();
-    let text_buffer = text_view.buffer();
-
-    add_signal(&text_view);
 
     // 文本滚动窗口
     let tv_scroller = gtk::ScrolledWindow::builder()
         .vscrollbar_policy(PolicyType::Automatic)
         .hscrollbar_policy(PolicyType::Never)
-        .child(&text_view)
+        .child(&tab_view)
         .build();
 
+    let vbox = gtk::Box::new(Vertical, 0);
+    vbox.append(&tab_bar);
+    vbox.append(&tv_scroller);
+
+    main_box.append(&vbox);
+
+    tab_view
+}
+
+fn build_tool_ui(main_box: &gtk::Box) {
     // 创建右侧工具
     let tool_box = gtk::Box::builder()
         .orientation(Vertical)
@@ -128,26 +159,5 @@ pub fn build_view(_win: &adw::ApplicationWindow) -> (gtk::Box, gtk::ScrolledWind
     tool_box.append(&game_btn);
 
     // 将这三个组件添加到主盒子
-    main_box.append(&sidebar_scrolled);
-    main_box.append(&tv_scroller);
     main_box.append(&tool_box);
-
-    // initialize global settings
-    let settings = gio::Settings::new(APP_ID);
-    let open_method = settings.string("open-method-type");
-    let last_dpath = settings.string("last-opened-dir");
-    let dir = gio::File::for_path(last_dpath);
-
-    // initialize dir sidebar
-    if open_method == "reopen" {
-        render_children_dir(&dir, &text_buffer, &root_expander, INDENT_MARGIN);
-        root_expander.set_title(&root_dir_title(&dir));
-        root_expander.set_subtitle(&root_dir_subtitle(&dir));
-    }
-
-    (main_box, sidebar_scrolled, text_buffer)
-}
-
-fn add_signal(textview: &gtk::TextView) {
-    let _ = textview;
 }

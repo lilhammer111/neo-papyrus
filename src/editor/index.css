@@ -70,3 +70,9 @@ menubar {
 headerbar {
     min-height: 20px;
 }
+
+/* tab bar */
+#tab-bar tabbox {
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
