@@ -56,7 +56,7 @@ fn build_ui(app: &adw::Application) {
 
     let overlay = gtk::Overlay::builder().child(&mbox).build();
 
-    let btn = gtk::Button::builder()
+    let file_add_btn = gtk::Button::builder()
         .has_frame(false)
         .icon_name("list-add-symbolic")
         .halign(Start)
@@ -64,7 +64,7 @@ fn build_ui(app: &adw::Application) {
         .margin_bottom(10)
         .margin_start(10)
         .build();
-    overlay.add_overlay(&btn);
+    overlay.add_overlay(&file_add_btn);
 
     win.set_content(Some(&overlay));
     win.show();

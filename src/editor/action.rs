@@ -1,7 +1,7 @@
 use crate::core::dir::{render_children_dir, INDENT_MARGIN, root_dir_title, root_dir_subtitle};
 use crate::APP_ID;
 use adw::gio::{ActionEntry, SimpleActionGroup};
-use adw::prelude::{ActionMapExtManual, ActionRowExt, FileExt, SettingsExt};
+use adw::prelude::{ActionMapExtManual, FileExt, SettingsExt};
 use adw::{gio, ExpanderRow};
 use gtk::prelude::{DialogExt, FileChooserExt, GtkWindowExt, WidgetExt};
 use gtk::{FileChooserAction, Overflow, ResponseType, TextBuffer};
@@ -37,7 +37,7 @@ pub fn file_actions(
                         // set project name to expander
                         // 通过设置一个新的root expander，来清空原先的root expander
                         let root_expander = ExpanderRow::builder()
-                            .icon_name("org.gnome.Software.Create")
+                            // .icon_name("org.gnome.Software.Create")
                             .overflow(Overflow::Hidden)
                             .css_classes(vec!["root-expander"])
                             .width_request(320)

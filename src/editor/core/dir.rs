@@ -1,3 +1,4 @@
+use crate::core::markdown::parse;
 use adw::prelude::{ExpanderRowExt, FileEnumeratorExt, FileExt, FileExtManual};
 use adw::{gio, ExpanderRow};
 use glib::GString;
@@ -65,7 +66,7 @@ pub fn render_children_dir(
                 // 设置相应的item icon
 
                 // 为该子文件创建按钮
-                let btn = gtk::Button::builder()
+                let file_btn = gtk::Button::builder()
                     .margin_start(indent_margin) // 根据深度设置左侧缩进
                     .child(
                         &adw::ButtonContent::builder()
@@ -81,13 +82,13 @@ pub fn render_children_dir(
 
                 // 将子文件添加到传入的父节点expander
                 if should_opacity(content_type) {
-                    btn.set_opacity(UNEXPECTED_FILE_OPACITY);
+                    file_btn.set_opacity(UNEXPECTED_FILE_OPACITY);
                 } else {
                     child_count += 1;
                 }
-                parent_expander.add_row(&btn);
+                parent_expander.add_row(&file_btn);
 
-                // 为子文件添加双击事件： 渲染文本内容到右侧text view
+                // 为子文件添加**双击事件**： 渲染文本内容到右侧text view
                 let gesture = GestureClick::builder()
                     .button(1)
                     .propagation_phase(gtk::PropagationPhase::Capture)
@@ -100,8 +101,11 @@ pub fn render_children_dir(
                         if let Ok((contents, _)) =
                             file_path_clone.load_contents(gio::Cancellable::NONE)
                         {
-                            if let Ok(text) = from_utf8(&contents) {
-                                text_buffer_clone.set_text(text);
+                            if let Ok(md) = from_utf8(&contents) {
+                                let pango_markup = parse(md);
+                                text_buffer_clone.set_text("");
+                                text_buffer_clone.insert_markup(&mut text_buffer_clone.end_iter(), &pango_markup);
+                                // text_buffer_clone.set_text();
                             } else {
                                 // text_buffer_clone.set_text("Failed to get file text");
                                 println!("failed to get file text")
@@ -110,7 +114,7 @@ pub fn render_children_dir(
                     }
                 });
 
-                btn.add_controller(gesture);
+                file_btn.add_controller(gesture);
             }
         }
 
