@@ -4,7 +4,7 @@ use adw::prelude::{ExpanderRowExt, PreferencesRowExt};
 use adw::{gdk, gio, ExpanderRow, TabBar, TabView};
 use gtk::gdk_pixbuf::Pixbuf;
 use gtk::prelude::*;
-use gtk::Align::{Center, Start};
+use gtk::Align::{Center, End, Start};
 use gtk::Orientation::{Horizontal, Vertical};
 use gtk::Overflow::Hidden;
 use gtk::PolicyType;
@@ -169,6 +169,7 @@ fn build_tool_ui(main_box: &gtk::Box) {
         .valign(Start)
         .margin_start(GAP)
         .margin_end(GAP)
+
         .build();
 
     // 添加所有的工具按钮

@@ -1,4 +1,4 @@
-use crate::core::markdown::parse;
+use crate::core::parser::markdown::parse;
 use adw::prelude::{ExpanderRowExt, FileEnumeratorExt, FileExt, FileExtManual};
 use adw::{gio, ExpanderRow};
 use glib::GString;

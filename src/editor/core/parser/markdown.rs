@@ -1,6 +1,6 @@
-use pulldown_cmark::CowStr;
-use pulldown_cmark::{Event, HeadingLevel, Options, Parser, Tag, TagEnd};
 use header::handle_start;
+use pulldown_cmark::CowStr;
+use pulldown_cmark::{Event, Options, Parser, Tag, TagEnd};
 
 pub fn parse(markdown: &str) -> CowStr {
     // 解析 Markdown 文本
@@ -13,7 +13,7 @@ pub fn parse(markdown: &str) -> CowStr {
         match event {
             Event::Start(tag) => match tag {
                 Tag::Heading { level, .. } => {
-                    handle_start(level, &pango_markup);
+                    handle_start(level, &mut pango_markup);
                 }
                 Tag::List(_) => {
                     list_indent_level += 1;
@@ -50,7 +50,7 @@ pub fn parse(markdown: &str) -> CowStr {
 mod header {
     use pulldown_cmark::HeadingLevel;
 
-    pub fn handle_start(level: HeadingLevel, mut pango_markup: &str) {
+    pub fn handle_start(level: HeadingLevel, pango_markup: &mut String) {
         let font_size = match level {
             HeadingLevel::H1 => "24pt", // Header 1 的字体大小
             HeadingLevel::H2 => "20pt", // Header 2 的字体大小
@@ -60,7 +60,9 @@ mod header {
         pango_markup.push_str(&format!("\n<span size='{}' weight='bold'>", font_size));
     }
 
+    #[allow(unused)]
     pub fn handle_end() {}
 
+    #[allow(unused)]
     pub fn handle_text() {}
 }
