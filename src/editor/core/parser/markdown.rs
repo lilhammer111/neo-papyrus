@@ -10,10 +10,13 @@ pub fn parse(markdown: &str) -> CowStr {
     let mut list_indent_level = 0;
 
     for event in parser {
+        let fb = gtk::FlowBox::new();
+
         match event {
             Event::Start(tag) => match tag {
                 Tag::Heading { level, .. } => {
-                    handle_start(level, &mut pango_markup);
+                    // handle_start(level, &mut pango_markup);
+                    handle_start(level, &fb);
                 }
                 Tag::List(_) => {
                     list_indent_level += 1;
@@ -30,14 +33,13 @@ pub fn parse(markdown: &str) -> CowStr {
                 } else {
                     pango_markup.push_str(&text);
                 }
+
+                let header = gtk::Label::new(Some(&text));
+                fb.append(&header);
             }
             Event::End(tag) => match tag {
-                TagEnd::Heading(_) => {
-                    pango_markup.push_str("</span>\n");
-                }
-                TagEnd::List(_) => {
-                    list_indent_level = list_indent_level.saturating_sub(1);
-                }
+                TagEnd::Heading(_) => {}
+                TagEnd::List(_) => {}
                 _ => (),
             },
             _ => (),
@@ -50,14 +52,29 @@ pub fn parse(markdown: &str) -> CowStr {
 mod header {
     use pulldown_cmark::HeadingLevel;
 
-    pub fn handle_start(level: HeadingLevel, pango_markup: &mut String) {
-        let font_size = match level {
-            HeadingLevel::H1 => "24pt", // Header 1 的字体大小
-            HeadingLevel::H2 => "20pt", // Header 2 的字体大小
-            HeadingLevel::H3 => "16pt", // Header 3 的字体大小
-            _ => "14pt",                // 其他 Header 的字体大小
+    pub fn handle_start(level: HeadingLevel, fb: &gtk::FlowBox) {
+        // let font_size = match level {
+        //     HeadingLevel::H1 => "24pt", // Header 1 的字体大小
+        //     HeadingLevel::H2 => "20pt", // Header 2 的字体大小
+        //     HeadingLevel::H3 => "16pt", // Header 3 的字体大小
+        //     _ => "14pt",                // 其他 Header 的字体大小
+        // };
+        // pango_markup.push_str(&format!("\n<span size='{}' weight='bold'>", font_size));
+
+        match level {
+            HeadingLevel::H1 => {
+                let prefix_label = gtk::Label::builder()
+                    .css_name("prefix-h1")
+                    .label("h1")
+                    .visible(false)
+                    .build();
+
+                fb.append(&prefix_label);
+            }
+            HeadingLevel::H2 => {}
+            HeadingLevel::H3 => {}
+            _ => unreachable!(),
         };
-        pango_markup.push_str(&format!("\n<span size='{}' weight='bold'>", font_size));
     }
 
     #[allow(unused)]

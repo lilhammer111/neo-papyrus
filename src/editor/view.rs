@@ -1,4 +1,5 @@
 use crate::core::dir::{render_children_dir, root_dir_subtitle, root_dir_title, INDENT_MARGIN};
+use crate::core::parser::markdown::parse;
 use crate::APP_ID;
 use adw::prelude::{ExpanderRowExt, PreferencesRowExt};
 use adw::{gdk, gio, ExpanderRow, TabBar, TabView};
@@ -103,7 +104,7 @@ fn build_tool_ui(main_box: &gtk::Box, tabview: &TabView) {
 
     // 创建“查看源码”工具按钮
     // 加载和缩放 SVG 图标
-    let source_btn = gtk::Button::builder()
+    let source_btn = gtk::ToggleButton::builder()
         // .icon_name("text-x.gcode")
         .cursor(&gdk::Cursor::from_name("pointer", None).unwrap())
         .focus_on_click(true)
@@ -121,7 +122,7 @@ fn build_tool_ui(main_box: &gtk::Box, tabview: &TabView) {
         .build();
 
     let tabview_cloned = tabview.clone();
-    source_btn.connect_clicked(move |_btn| {
+    source_btn.connect_toggled(move |btn| {
         if let Some(page) = tabview_cloned.selected_page() {
             println!("{}", page.title());
             unsafe {
@@ -134,7 +135,13 @@ fn build_tool_ui(main_box: &gtk::Box, tabview: &TabView) {
                     let gfile = gio::File::for_path(fpath);
                     if let Ok((contents, _)) = gfile.load_contents(gio::Cancellable::NONE) {
                         let text = from_utf8(&contents).unwrap();
-                        buf.set_text(text);
+                        if btn.is_active() {
+                            buf.set_text(text);
+                        } else {
+                            buf.set_text("");
+                            let md = parse(&text);
+                            buf.insert_markup(&mut buf.end_iter(), &md);
+                        }
                     }
                 }
             }
