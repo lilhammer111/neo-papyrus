@@ -79,6 +79,8 @@ fn build_text_ui(main_box: &gtk::Box) -> TabView {
 
     // 文本滚动窗口
     let tv_scroller = gtk::ScrolledWindow::builder()
+        .margin_top(30)
+        .margin_bottom(30)
         .vscrollbar_policy(PolicyType::Automatic)
         .hscrollbar_policy(PolicyType::Never)
         .vexpand(true)

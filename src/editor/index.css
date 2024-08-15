@@ -116,3 +116,8 @@ headerbar {
 .h6-label {
     font-weight: bold;
 }
+
+/* paragraph text */
+.paragraph {
+    line-height: 1.3;
+}
