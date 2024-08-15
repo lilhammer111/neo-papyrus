@@ -1,5 +1,5 @@
 use crate::core::dir::{render_children_dir, root_dir_subtitle, root_dir_title, INDENT_MARGIN};
-use crate::core::parser::markdown::parse;
+use crate::core::parser::markdown::widget_from;
 use crate::APP_ID;
 use adw::prelude::{ExpanderRowExt, PreferencesRowExt};
 use adw::{gdk, gio, ExpanderRow, TabBar, TabView};
@@ -81,6 +81,7 @@ fn build_text_ui(main_box: &gtk::Box) -> TabView {
     let tv_scroller = gtk::ScrolledWindow::builder()
         .vscrollbar_policy(PolicyType::Automatic)
         .hscrollbar_policy(PolicyType::Never)
+        .vexpand(true)
         .child(&tab_view)
         .build();
 
@@ -118,7 +119,7 @@ fn build_tool_ui(main_box: &gtk::Box, tabview: &TabView) {
         .valign(Start)
         .margin_start(GAP)
         .margin_end(GAP)
-        .opacity(0.8)
+        .opacity(0.9)
         .build();
 
     let tabview_cloned = tabview.clone();
@@ -139,8 +140,9 @@ fn build_tool_ui(main_box: &gtk::Box, tabview: &TabView) {
                             buf.set_text(text);
                         } else {
                             buf.set_text("");
-                            let md = parse(&text);
-                            buf.insert_markup(&mut buf.end_iter(), &md);
+                            let document_box = widget_from(&text);
+                            let new_page = tabview_cloned.append(&document_box);
+                            tabview_cloned.set_selected_page(&new_page);
                         }
                     }
                 }

@@ -1,9 +1,9 @@
-use crate::core::parser::markdown::parse;
+use crate::core::parser::markdown::widget_from;
 use adw::prelude::{ExpanderRowExt, FileEnumeratorExt, FileExt, FileExtManual};
 use adw::{gio, ExpanderRow};
 use glib::object::ObjectExt;
 use glib::GString;
-use gtk::prelude::{TextBufferExt, TextViewExt, WidgetExt};
+use gtk::prelude::WidgetExt;
 use gtk::Align::Start;
 use gtk::GestureClick;
 use std::process::Command;
@@ -93,8 +93,7 @@ pub fn render_children_dir(
 
                 let child_gfile_cloned = child_gfile.clone();
                 let tabview_cloned = tabview.clone();
-
-                add_signal_for_file(&file_btn, child_gfile_cloned, tabview_cloned)
+                add_signal_for_file(&file_btn, child_gfile_cloned, &tabview_cloned)
             }
         }
 
@@ -106,43 +105,36 @@ pub fn render_children_dir(
 }
 
 /// 为子文件添加**双击事件**： 渲染文本内容到右侧text view
-fn add_signal_for_file(btn: &gtk::Button, file: gio::File, tabview: adw::TabView) {
+fn add_signal_for_file(btn: &gtk::Button, file: gio::File, tabview: &adw::TabView) {
     let gesture = GestureClick::builder()
         .button(1)
         .propagation_phase(gtk::PropagationPhase::Capture)
         .build();
 
-    // let text_buffer_clone = text_buffer.clone();
+    let tabview_cloned = tabview.clone();
     gesture.connect_released(move |_, n_press, _, _| {
         if n_press >= 2 {
             if let Ok((contents, _)) = file.load_contents(gio::Cancellable::NONE) {
                 // 当双击文件时，为该文件创建创建一个带tab bar的文本显示区域
-                let text_view = gtk::TextView::builder()
-                    .editable(false)
-                    .vexpand(true)
-                    .hexpand(true)
-                    .wrap_mode(gtk::WrapMode::Word)
-                    .build();
-                let text_buffer = text_view.buffer();
                 if let Ok(md) = from_utf8(&contents) {
-                    let pango_markup = parse(md);
-                    // text_buffer.set_text("");
-                    text_buffer.insert_markup(&mut text_buffer.end_iter(), &pango_markup);
-                    // text_buffer_clone.set_text();
-                } else {
-                    // text_buffer_clone.set_text("Failed to get file text");
-                    println!("failed to get file text")
-                }
+                    let document_box = widget_from(md);
 
-                // 相当于向文本区域添加一个新的tab和页面
-                let page = tabview.append(&text_view);
-                let filename_pb = file.basename().unwrap();
-                let filename = filename_pb.to_str().unwrap();
-                page.set_title(filename);
-                let fpath = file.path().unwrap();
-                unsafe {
-                    let fpath = fpath.to_string_lossy();
-                    page.set_data("fpath", fpath.to_string());
+                    // 相当于向文本区域添加一个新的tab和页面
+                    let page = tabview_cloned.append(&document_box);
+
+                    let filename_pb = file.basename().unwrap();
+                    let filename = filename_pb.to_str().unwrap();
+                    page.set_title(filename);
+
+                    tabview_cloned.set_selected_page(&page);
+
+                    let fpath = file.path().unwrap();
+                    unsafe {
+                        let fpath = fpath.to_string_lossy();
+                        page.set_data("fpath", fpath.to_string());
+                    }
+                } else {
+                    println!("failed to get file text")
                 }
             }
         }

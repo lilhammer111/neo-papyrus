@@ -1,80 +1,146 @@
-use header::handle_start;
-use pulldown_cmark::CowStr;
-use pulldown_cmark::{Event, Options, Parser, Tag, TagEnd};
+use gtk::prelude::{BoxExt, TextBufferExt, TextViewExt};
+use gtk::Align::{Center, Start};
+use gtk::Orientation::Horizontal;
+use pulldown_cmark::{Event, HeadingLevel, Options, Parser, Tag, TagEnd};
 
-pub fn parse(markdown: &str) -> CowStr {
+pub fn widget_from(markdown: &str) -> gtk::ListBox {
     // 解析 Markdown 文本
     let parser = Parser::new_ext(markdown, Options::all());
 
-    let mut pango_markup = String::new();
-    let mut list_indent_level = 0;
+    let document_box = gtk::ListBox::new();
 
+    let mut header_box: Option<HeaderBox> = None;
+    let mut para_box: Option<gtk::TextView> = None;
     for event in parser {
-        let fb = gtk::FlowBox::new();
-
         match event {
             Event::Start(tag) => match tag {
+                Tag::Paragraph => {
+                    let row = gtk::TextView::builder()
+                        .margin_top(5)
+                        .margin_bottom(5)
+                        .margin_start(24)
+                        .build();
+                    para_box = Some(row)
+                }
                 Tag::Heading { level, .. } => {
-                    // handle_start(level, &mut pango_markup);
-                    handle_start(level, &fb);
+                    let row = gtk::Box::builder()
+                        .orientation(Horizontal)
+                        .valign(Center)
+                        .build();
+                    HeaderBox::handle_start(level, &row);
+                    header_box = Some(HeaderBox::new(row, level as u8));
                 }
-                Tag::List(_) => {
-                    list_indent_level += 1;
+                Tag::BlockQuote(_) => {}
+                Tag::CodeBlock(_) => {}
+                Tag::HtmlBlock => {}
+                Tag::List(_) => {}
+                Tag::Item => {}
+                Tag::FootnoteDefinition(_) => {}
+                Tag::Table(_) => {}
+                Tag::TableHead => {}
+                Tag::TableRow => {}
+                Tag::TableCell => {}
+                Tag::Emphasis => {}
+                Tag::Strong => {
+                    let _bold_label = gtk::Label::builder().css_classes(["bold"]).build();
                 }
-                _ => (),
+                Tag::Strikethrough => {}
+                Tag::Link { .. } => {}
+                Tag::Image { .. } => {}
+                Tag::MetadataBlock(_) => {}
             },
             Event::Text(text) => {
-                let indent = "    ".repeat(list_indent_level); // 每一级缩进
-                if list_indent_level > 0 {
-                    pango_markup.push_str(&format!(
-                        "\n<span foreground='red'>{}• {}</span>\n",
-                        indent, text
-                    ));
-                } else {
-                    pango_markup.push_str(&text);
+                // println!("text: {text}");
+                if let Some(HeaderBox { ref row, level }) = header_box {
+                    let header_label = gtk::Label::builder()
+                        .css_classes([
+                            format!("h{}-label", level.to_string()),
+                            "header-label".to_string(),
+                        ])
+                        .valign(Center)
+                        .label(&*text)
+                        .build();
+                    row.append(&header_label)
                 }
 
-                let header = gtk::Label::new(Some(&text));
-                fb.append(&header);
+                if let Some(ref row) = para_box {
+                    let buf = row.buffer();
+                    buf.set_text(text.as_ref())
+                }
             }
             Event::End(tag) => match tag {
-                TagEnd::Heading(_) => {}
-                TagEnd::List(_) => {}
-                _ => (),
+                TagEnd::Heading(_) => {
+                    if let Some(HeaderBox { ref row, .. }) = header_box.take() {
+                        document_box.append(row);
+                    }
+                }
+                TagEnd::Paragraph => {
+                    if let Some(row) = para_box.take() {
+                        document_box.append(&row);
+                    }
+                }
+                _ => unreachable!(),
             },
+            // Event::End(_) => {
+            //     if let Some(HeaderBox { ref row, .. }) = header_box.take() {
+            //         document_box.append(row);
+            //     }
+            // }
             _ => (),
         }
     }
 
-    CowStr::from(pango_markup)
+    document_box
 }
 
-mod header {
-    use pulldown_cmark::HeadingLevel;
+pub struct EmphasisBox {}
 
-    pub fn handle_start(level: HeadingLevel, fb: &gtk::FlowBox) {
-        // let font_size = match level {
-        //     HeadingLevel::H1 => "24pt", // Header 1 的字体大小
-        //     HeadingLevel::H2 => "20pt", // Header 2 的字体大小
-        //     HeadingLevel::H3 => "16pt", // Header 3 的字体大小
-        //     _ => "14pt",                // 其他 Header 的字体大小
-        // };
-        // pango_markup.push_str(&format!("\n<span size='{}' weight='bold'>", font_size));
+pub struct Paragraph {}
+
+impl Paragraph {}
+
+pub struct HeaderBox {
+    pub row: gtk::Box,
+    pub level: u8,
+}
+
+impl HeaderBox {
+    pub fn new(row: gtk::Box, level: u8) -> Self {
+        Self { row, level }
+    }
+
+    pub fn handle_start(level: HeadingLevel, fb: &gtk::Box) {
+        let prefix_label = gtk::Label::builder()
+            .vexpand_set(false)
+            .css_classes(["header-prefix"])
+            .valign(Center)
+            .halign(Center)
+            .width_request(20)
+            .margin_end(4)
+            // .visible(false) // todo
+            .build();
 
         match level {
             HeadingLevel::H1 => {
-                let prefix_label = gtk::Label::builder()
-                    .css_name("prefix-h1")
-                    .label("h1")
-                    .visible(false)
-                    .build();
-
-                fb.append(&prefix_label);
+                prefix_label.set_label("h1");
             }
-            HeadingLevel::H2 => {}
-            HeadingLevel::H3 => {}
-            _ => unreachable!(),
+            HeadingLevel::H2 => {
+                prefix_label.set_label("h2");
+            }
+            HeadingLevel::H3 => {
+                prefix_label.set_label("h3");
+            }
+            HeadingLevel::H4 => {
+                prefix_label.set_label("h4");
+            }
+            HeadingLevel::H5 => {
+                prefix_label.set_label("h5");
+            }
+            HeadingLevel::H6 => {
+                prefix_label.set_label("h6");
+            }
         };
+        fb.append(&prefix_label);
     }
 
     #[allow(unused)]
