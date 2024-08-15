@@ -4,10 +4,11 @@ use adw::prelude::{ExpanderRowExt, PreferencesRowExt};
 use adw::{gdk, gio, ExpanderRow, TabBar, TabView};
 use gtk::gdk_pixbuf::Pixbuf;
 use gtk::prelude::*;
-use gtk::Align::{Center, End, Start};
+use gtk::Align::{Center, Start};
 use gtk::Orientation::{Horizontal, Vertical};
 use gtk::Overflow::Hidden;
 use gtk::PolicyType;
+use std::str::from_utf8;
 
 const GAP: i32 = 4;
 pub fn build_view(_win: &adw::ApplicationWindow) -> (gtk::Box, gtk::ScrolledWindow, TabView) {
@@ -16,7 +17,7 @@ pub fn build_view(_win: &adw::ApplicationWindow) -> (gtk::Box, gtk::ScrolledWind
     let (sidebar, root_expander) = build_sidebar_ui(&main_box);
 
     let tabview = build_text_ui(&main_box);
-    build_tool_ui(&main_box);
+    build_tool_ui(&main_box, &tabview);
 
     // initialize global settings
     let settings = gio::Settings::new(APP_ID);
@@ -91,7 +92,7 @@ fn build_text_ui(main_box: &gtk::Box) -> TabView {
     tab_view
 }
 
-fn build_tool_ui(main_box: &gtk::Box) {
+fn build_tool_ui(main_box: &gtk::Box, tabview: &TabView) {
     // 创建右侧工具
     let tool_box = gtk::Box::builder()
         .orientation(Vertical)
@@ -118,6 +119,27 @@ fn build_tool_ui(main_box: &gtk::Box) {
         .margin_end(GAP)
         .opacity(0.8)
         .build();
+
+    let tabview_cloned = tabview.clone();
+    source_btn.connect_clicked(move |_btn| {
+        if let Some(page) = tabview_cloned.selected_page() {
+            println!("{}", page.title());
+            unsafe {
+                let fpath = page.data::<String>("fpath").unwrap();
+                let fpath = fpath.as_ref();
+                println!("fpath got from data: {}", fpath);
+                if let Some(textview) = page.child().downcast_ref::<gtk::TextView>() {
+                    let buf = textview.buffer();
+
+                    let gfile = gio::File::for_path(fpath);
+                    if let Ok((contents, _)) = gfile.load_contents(gio::Cancellable::NONE) {
+                        let text = from_utf8(&contents).unwrap();
+                        buf.set_text(text);
+                    }
+                }
+            }
+        }
+    });
 
     // 打开终端 工具按钮
     let terminal_btn = gtk::Button::builder()
@@ -169,7 +191,6 @@ fn build_tool_ui(main_box: &gtk::Box) {
         .valign(Start)
         .margin_start(GAP)
         .margin_end(GAP)
-
         .build();
 
     // 添加所有的工具按钮

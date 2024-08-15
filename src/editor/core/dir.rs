@@ -1,6 +1,7 @@
 use crate::core::parser::markdown::parse;
 use adw::prelude::{ExpanderRowExt, FileEnumeratorExt, FileExt, FileExtManual};
 use adw::{gio, ExpanderRow};
+use glib::object::ObjectExt;
 use glib::GString;
 use gtk::prelude::{TextBufferExt, TextViewExt, WidgetExt};
 use gtk::Align::Start;
@@ -137,7 +138,12 @@ fn add_signal_for_file(btn: &gtk::Button, file: gio::File, tabview: adw::TabView
                 let page = tabview.append(&text_view);
                 let filename_pb = file.basename().unwrap();
                 let filename = filename_pb.to_str().unwrap();
-                page.set_title(filename)
+                page.set_title(filename);
+                let fpath = file.path().unwrap();
+                unsafe {
+                    let fpath = fpath.to_string_lossy();
+                    page.set_data("fpath", fpath.to_string());
+                }
             }
         }
     });
