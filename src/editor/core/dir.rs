@@ -5,7 +5,7 @@ use glib::object::ObjectExt;
 use glib::GString;
 use gtk::prelude::WidgetExt;
 use gtk::Align::Start;
-use gtk::{GestureClick, PolicyType};
+use gtk::GestureClick;
 use std::process::Command;
 use std::str::from_utf8;
 
