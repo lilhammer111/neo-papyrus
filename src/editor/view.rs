@@ -68,7 +68,7 @@ fn build_sidebar_ui(main_box: &gtk::Box) -> (gtk::ScrolledWindow, ExpanderRow) {
 
 fn build_text_ui(main_box: &gtk::Box) -> TabView {
     // 创建tab bar
-    let tab_view = TabView::new();
+    let tab_view = TabView::builder().build();
     let tab_bar = TabBar::builder()
         .name("tab-bar")
         .view(&tab_view)
@@ -77,22 +77,17 @@ fn build_text_ui(main_box: &gtk::Box) -> TabView {
         .expand_tabs(false)
         .build();
 
-    // 文本滚动窗口
-    let tv_scroller = gtk::ScrolledWindow::builder()
-        .margin_top(30)
-        .margin_bottom(30)
-        .vscrollbar_policy(PolicyType::Automatic)
-        .hscrollbar_policy(PolicyType::Never)
-        .vexpand(true)
-        .child(&tab_view)
-        .build();
-
     let vbox = gtk::Box::new(Vertical, 0);
     vbox.append(&tab_bar);
-    vbox.append(&tv_scroller);
-
+    vbox.append(&tab_view);
+    // 文本滚动窗口
+    // let tv_scroller = gtk::ScrolledWindow::builder()
+    //     .css_classes(["editor-scroller"])
+    //     .vscrollbar_policy(PolicyType::Automatic)
+    //     .hscrollbar_policy(PolicyType::Never)
+    //     .child(&vbox)
+    //     .build();
     main_box.append(&vbox);
-
     tab_view
 }
 

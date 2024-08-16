@@ -5,7 +5,7 @@ use glib::object::ObjectExt;
 use glib::GString;
 use gtk::prelude::WidgetExt;
 use gtk::Align::Start;
-use gtk::GestureClick;
+use gtk::{GestureClick, PolicyType};
 use std::process::Command;
 use std::str::from_utf8;
 
@@ -121,7 +121,6 @@ fn add_signal_for_file(btn: &gtk::Button, file: gio::File, tabview: &adw::TabVie
 
                     // 相当于向文本区域添加一个新的tab和页面
                     let page = tabview_cloned.append(&document_box);
-
                     let filename_pb = file.basename().unwrap();
                     let filename = filename_pb.to_str().unwrap();
                     page.set_title(filename);
