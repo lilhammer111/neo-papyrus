@@ -1,9 +1,10 @@
 use adw::gdk::pango;
 use adw::gdk::pango::FontDescription;
 use gtk::prelude::{TextBufferExt, TextBufferExtManual, TextTagExt};
+use gtk::Justification::Center;
 use gtk::PolicyType::Never;
 use gtk::{TextBuffer, TextTag, TextTagTable, WrapMode};
-use pulldown_cmark::{Event, HeadingLevel, Options, Parser, Tag, TagEnd};
+use pulldown_cmark::{CowStr, Event, HeadingLevel, Options, Parser, Tag, TagEnd};
 use std::error::Error;
 use std::fmt::{Debug, Display};
 
@@ -26,12 +27,34 @@ pub fn widget_from(markdown: &str) -> gtk::ScrolledWindow {
         tag_table.add(&header_tag);
     }
 
+    // set strong tag
+    let strong_tag = TextTag::new(Some("strong_tag"));
+    strong_tag.set_font(Some("Bold"));
+    tag_table.add(&strong_tag);
+
+    let strong_tagname = strong_tag.name().unwrap().to_string();
+
     // set emphasis tag
     let emphasis_tag = TextTag::new(Some("em_tag"));
-    emphasis_tag.set_font(Some("Bold"));
+    emphasis_tag.set_font(Some("Italic"));
+    tag_table.add(&emphasis_tag);
 
+    let emphasis_tagname = emphasis_tag.name().unwrap().to_string();
+
+    // set inline code tag
+    let inline_code_tag = TextTag::new(Some("inline_code"));
+    inline_code_tag.set_background(Some("#f0f4f8"));
+    inline_code_tag.set_background_full_height(false);
+    inline_code_tag.set_left_margin(2);
+    inline_code_tag.set_right_margin(2);
+    inline_code_tag.set_justification(Center);
+    inline_code_tag.set_rise(4 * pango::SCALE);
+    tag_table.add(&inline_code_tag);
+
+    let inline_code_tagname = inline_code_tag.name().unwrap().to_string();
+
+    // create buffer
     let buf = TextBuffer::new(Some(&tag_table));
-
     let document = gtk::TextView::builder()
         .vexpand(true)
         .wrap_mode(WrapMode::Word)
@@ -42,69 +65,77 @@ pub fn widget_from(markdown: &str) -> gtk::ScrolledWindow {
         .hscrollbar_policy(Never)
         .child(&document)
         .build();
-    let mut flag = EventFlag::default();
 
+    let mut tags: Vec<String> = Vec::new();
     for event in parser {
         match event {
-            Event::Start(tag) => flag.update(Some(&tag)),
-            Event::End(tag_end) => {
-                if tag_end == TagEnd::Paragraph {
-                    let text = flag.accum_text.clone();
-                    buf.insert(&mut buf.end_iter(), &text);
+            Event::Start(tag) => match tag {
+                Tag::Paragraph => {}
+                Tag::Heading { level, .. } => {
+                    let header_tag = format!("{}", level);
+                    tags.push(header_tag);
+                }
+                Tag::List(_) => {}
+                Tag::Item => {
+                    buf.insert(&mut buf.end_iter(), "·");
+                }
+                Tag::Strong => tags.push(strong_tagname.clone()),
+                Tag::Emphasis => tags.push(emphasis_tagname.clone()),
+                Tag::BlockQuote(_) => {}
+                Tag::CodeBlock(_) => {}
+                Tag::HtmlBlock => {}
+                Tag::FootnoteDefinition(_) => {}
+                Tag::Table(_) => {}
+                Tag::TableHead => {}
+                Tag::TableRow => {}
+                Tag::TableCell => {}
+                Tag::Strikethrough => {}
+                Tag::Link { .. } => {}
+                Tag::Image { .. } => {}
+                Tag::MetadataBlock(_) => {}
+            },
+            Event::End(tag_end) => match tag_end {
+                TagEnd::Paragraph => {
                     buf.insert(&mut buf.end_iter(), "\n");
-                    flag.accum_text.clear();
                 }
-
-                if tag_end == TagEnd::Emphasis {
-                    println!("end")
+                TagEnd::Heading(level) => {
+                    tags.retain(|tag| tag != format!("{}", level).as_str());
+                    buf.insert(&mut buf.end_iter(), "\n");
                 }
-
-                flag.update(None)
-            }
+                TagEnd::Strong => {
+                    tags.retain(|tag| tag != strong_tagname.as_str());
+                }
+                TagEnd::Emphasis => {
+                    tags.retain(|tag| tag != emphasis_tagname.as_str());
+                }
+                TagEnd::BlockQuote => {}
+                TagEnd::CodeBlock => {}
+                TagEnd::HtmlBlock => {}
+                TagEnd::List(_) => {}
+                TagEnd::Item => {
+                    buf.insert(&mut buf.end_iter(), "\n");
+                }
+                TagEnd::FootnoteDefinition => {}
+                TagEnd::Table => {}
+                TagEnd::TableHead => {}
+                TagEnd::TableRow => {}
+                TagEnd::TableCell => {}
+                TagEnd::Strikethrough => {}
+                TagEnd::Link => {}
+                TagEnd::Image => {}
+                TagEnd::MetadataBlock(_) => {}
+            },
             Event::Text(text) => {
-                match flag.tag() {
-                    None => flag.update(None),
-                    Some(event_tag) => match event_tag {
-                        Tag::Heading { level, .. } => {
-                            let header_tag = format!("{}", level);
-                            println!("tag name {}, header text: {}", header_tag, text);
-                            buf.insert_with_tags_by_name(
-                                &mut buf.end_iter(),
-                                &text,
-                                &[&header_tag],
-                            );
-                            buf.insert(&mut buf.end_iter(), "\n");
-                        }
-                        Tag::List(_) => {}
-                        Tag::Item => {}
-                        Tag::Paragraph => {                flag.accum_text.push_str(&text);
-                            println!("text when text para event: {}", text);}
-                        Tag::CodeBlock(_) => {}
-                        Tag::HtmlBlock => {}
-                        Tag::BlockQuote(_) => {}
-                        Tag::FootnoteDefinition(_) => {}
-                        Tag::Table(_) => {}
-                        Tag::TableHead => {}
-                        Tag::TableRow => {}
-                        Tag::TableCell => {}
-                        Tag::Emphasis => {
-                            println!("em text: {}", text);
-                            flag.accum_text.push_str(&text);
-                            println!("text when text para event: {}", text);
-                        }
-                        Tag::Strong => {
-                            println!("strong text: {}", text);
-                            // buf.insert_with_tags(&mut buf.end_iter(), &text, &[&emphasis_tag])
-                        }
-                        Tag::Strikethrough => {}
-                        Tag::Link { .. } => {}
-                        Tag::Image { .. } => {}
-                        Tag::MetadataBlock(_) => {}
-                    },
-                }
-
+                let tags = tags.iter().map(|tag| tag.as_str()).collect::<Vec<&str>>();
+                println!("tags: {:?}", tags);
+                buf.insert_with_tags_by_name(&mut buf.end_iter(), &text, &tags);
             }
-            Event::Code(_) => {}
+            Event::Code(code) => {
+                tags.push(inline_code_tagname.clone());
+                let tags_slice = tags.iter().map(|tag| tag.as_str()).collect::<Vec<&str>>();
+                buf.insert_with_tags_by_name(&mut buf.end_iter(), &code, &tags_slice);
+                tags.retain(|tag| tag != inline_code_tagname.as_str());
+            }
             Event::InlineMath(_) => {}
             Event::DisplayMath(_) => {}
             Event::Html(_) => {}

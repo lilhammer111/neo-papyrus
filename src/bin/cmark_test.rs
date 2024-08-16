@@ -16,6 +16,9 @@ fn main() {
             Event::Text(text) => {
                 println!("{}", text)
             }
+            Event::Code(_) => {
+                println!("code")
+            }
             _ => {}
         }
     }
