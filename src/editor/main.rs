@@ -3,6 +3,7 @@ mod menu;
 mod shortcuts;
 mod view;
 mod core;
+mod widget;
 
 use crate::menu::build_menu;
 use crate::shortcuts::setup_shortcuts;
